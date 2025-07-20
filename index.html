@@ -2032,11 +2032,9 @@ async function loadClothingData() {
         
         // Fetch all products from Shopify as JSON with retry logic
         const response = await fetchWithRetry(`https://${storeName}.myshopify.com/products.json?limit=250`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+    method: 'GET'
+    // No headers needed for GET request
+});
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
