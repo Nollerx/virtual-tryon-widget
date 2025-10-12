@@ -1,6 +1,6 @@
 (function () {
   // TODO: set to your CDN origin that serves widget.html + assets
-  const WIDGET_BASE_URL = "https://nollerx.github.io/MY-HOSTED-WIDGET9"; 
+  const WIDGET_BASE_URL = "https://nollerx.github.io/virtual-tryon-widget"; 
   const ALLOWED_ORIGIN = new URL(WIDGET_BASE_URL).origin;
 
   // Read attributes from the embedding script tag
@@ -92,5 +92,6 @@
     }, ALLOWED_ORIGIN);
   });
 })();
+
 
 
