@@ -19,17 +19,36 @@ window.addEventListener('message', (e) => {
   }
 });
 
+// Send ELLO_READY when window loads
+window.addEventListener('load', () => {
+  console.log('Window loaded, sending ELLO_READY');
+  post('ELLO_READY');
+});
+
 // Example UI hooks you should call from your buttons/views:
 function openPanel() { post('ELLO_OPEN_PANEL'); }
 function closePanel() { post('ELLO_CLOSE_PANEL'); }
 function requestFullscreen() { post('ELLO_REQUEST_FULLSCREEN'); }
 
-// Optional: auto report height to parent to avoid scroll bars
+// ResizeObserver to emit ELLO_SIZE when docked
+let isDocked = true;
 const ro = new ResizeObserver(() => {
-  const h = document.documentElement.scrollHeight;
-  post('ELLO_SIZE', { height: h });
+  if (isDocked) {
+    const h = document.documentElement.scrollHeight;
+    post('ELLO_SIZE', { height: h });
+  }
 });
 ro.observe(document.documentElement);
+
+// Update docked state when panel opens/closes
+function updateDockedState(docked) {
+  isDocked = docked;
+  if (docked) {
+    // Report current height when docked
+    const h = document.documentElement.scrollHeight;
+    post('ELLO_SIZE', { height: h });
+  }
+}
 
 // ===== YOUR EXISTING CODE BELOW =====
 // Make sure initializeWidget only mounts inside #ello-root
@@ -92,18 +111,18 @@ function initializeWidget(store) {
     }
 }
 
-// Render the widget HTML into #ello-root
+// Render the widget HTML into .ello-panel
 function renderWidget() {
-    const root = document.getElementById('ello-root');
-    if (!root) {
-        console.error('ello-root element not found');
+    const panel = document.querySelector('.ello-panel');
+    if (!panel) {
+        console.error('.ello-panel element not found');
         return;
     }
     
-    console.log('Rendering widget into #ello-root');
+    console.log('Rendering widget into .ello-panel');
     
     // Inject the widget HTML
-    root.innerHTML = `
+    panel.innerHTML = `
         <div id="virtualTryonWidget" class="virtual-tryon-widget widget-minimized">
             <!-- Header -->
             <div class="widget-header">
@@ -940,6 +959,7 @@ function openWidget() {
     
     // Notify parent to expand iframe
     openPanel();
+    updateDockedState(false);
     
     if (isMobile) {
         document.body.style.overflow = 'hidden';
@@ -988,6 +1008,7 @@ function closeWidget() {
     
     // Notify parent to collapse iframe
     closePanel();
+    updateDockedState(true);
     
     // Reset body overflow
     document.body.style.overflow = '';
