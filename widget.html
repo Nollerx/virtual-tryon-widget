@@ -1,23 +1,34 @@
 <!doctype html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>Ello Widget</title>
-  <link rel="stylesheet" href="./widget.css" />
-  <script>
-    // Handshake: ask parent for config right after DOM is read
-    document.addEventListener('DOMContentLoaded', () => {
-      window.parent?.postMessage({ type: 'ELLO_GET_CONFIG' }, '*');
-    });
-  </script>
-  <script defer src="./widget-main.js"></script>
-</head>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  
+    <!-- Prevent the Storefront token (or any URL params) from leaking via referrers -->
+    <meta name="referrer" content="no-referrer" />
+  
+    <title>Ello Widget</title>
+    <link rel="stylesheet" href="./widget.css" />
+  
+    <script>
+      // Handshake: ask parent for config right after DOM is ready
+      document.addEventListener('DOMContentLoaded', () => {
+        window.parent?.postMessage({ type: 'ELLO_GET_CONFIG' }, '*');
+      });
+    </script>
+  
+    <script defer src="./widget-main.js"></script>
+  
+    <style>
+      /* Keep the iframe background invisible */
+      html, body { background: transparent !important; }
+    </style>
+  </head>  
 <body>
   <div id="ello-root">
     <div class="ello-app">
       <div class="ello-panel">
-        <!-- Widget content will be rendered here --^
+        <!-- Widget content will be rendered here -->
       </div>
     </div>
   </div>
