@@ -2,7 +2,7 @@
   console.log('Widget loader starting...');
   
   // TODO: set to your CDN origin that serves widget.html + assets
-  const WIDGET_BASE_URL = "https://nollerx.github.io/virtual-tryon-widget"; 
+  const WIDGET_BASE_URL = "https://nollerx.github.io/MY-HOSTED-WIDGET9"; 
   const ALLOWED_ORIGIN = new URL(WIDGET_BASE_URL).origin;
   
   console.log('WIDGET_BASE_URL:', WIDGET_BASE_URL);
@@ -38,7 +38,7 @@
   frame.sandbox = 'allow-scripts allow-forms allow-same-origin allow-popups';
   frame.loading = 'eager';
   frame.style.cssText = `
-    width:360px;height:520px;border:0;border-radius:16px;
+    width:72px;height:72px;border:0;border-radius:16px;
     box-shadow:0 8px 24px rgba(0,0,0,.18);
     transition:all .25s ease;
     background:transparent;
@@ -57,7 +57,7 @@
   }
   function collapseToDock() {
     Object.assign(frame.style, {
-      position:'static', width:'360px', height:'520px',
+      position:'static', width:'72px', height:'72px',
       borderRadius:'16px', boxShadow:'0 8px 24px rgba(0,0,0,.18)'
     });
   }
@@ -104,6 +104,5 @@
     console.log('Config sent to iframe');
   });
 })();
-
 
 
