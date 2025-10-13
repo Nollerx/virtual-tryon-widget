@@ -63,21 +63,20 @@ body {
     position: absolute;
     bottom: 0;
     right: 0;
-    width: 72px !important;
-    height: 72px !important;
-    border-radius: 8px !important;
+    width: 64px !important;      /* was 72px */
+    height: 64px !important;     /* was 72px */
+    border-radius: 12px !important; /* match iframe radius (below) */
     cursor: pointer;
-    background: transparent !important;
+    background: transparent !important;  /* was a gradient */
     display: flex !important;
     align-items: center;
     justify-content: center;
     font-size: 24px;
     overflow: hidden !important;
-    box-shadow: none !important;
-    animation: subtleGlow 4s ease-in-out infinite;
-    border: 0 !important;
-    transform: scale(1);
-}
+    box-shadow: none !important;  /* prevents shadow clipping */
+    border: 0 !important;         /* removes faint border ring */
+  }
+  
 
 @keyframes subtleGlow {
     0%, 100% { 
