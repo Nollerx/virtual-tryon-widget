@@ -2,7 +2,7 @@
   console.log('Widget loader starting...');
   
   // TODO: set to your CDN origin that serves widget.html + assets
-  const WIDGET_BASE_URL = "https://nollerx.github.io/MY-HOSTED-WIDGET9"; 
+  const WIDGET_BASE_URL = "https://nollerx.github.io/virtual-tryon-widget"; 
   const ALLOWED_ORIGIN = new URL(WIDGET_BASE_URL).origin;
   
   console.log('WIDGET_BASE_URL:', WIDGET_BASE_URL);
@@ -132,6 +132,7 @@
     console.log('Config sent to iframe');
   });
 })();
+
 
 
 
