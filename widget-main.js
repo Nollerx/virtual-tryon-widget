@@ -14,9 +14,13 @@ window.addEventListener('message', (e) => {
   if (type === 'ELLO_CONFIG') {
     console.log('Received ELLO_CONFIG:', payload);
     ELLO_STORE = { id: payload.storeId, name: payload.storeName, theme: payload.theme };
-    // Now safe to init the widget UI
+  
+    // NEW: make Shopify creds globally available
+    window.ELLO_SHOP_DOMAIN      = payload.shopDomain || window.ELLO_SHOP_DOMAIN || '';
+    window.ELLO_STOREFRONT_TOKEN = payload.storefrontToken || window.ELLO_STOREFRONT_TOKEN || '';
+  
     initializeWidget(ELLO_STORE);
-  }
+  }  
 });
 
 // Send ELLO_READY when window loads
@@ -63,9 +67,10 @@ function initializeWidget(store) {
     window.ELLO_STORE_CONFIG = {
         storeId: store.id,
         storeName: store.name,
-        clothingPopulationType: 'supabase',
+        clothingPopulationType: 'shopify',   // <-- use Shopify
         planName: 'STARTER'
-    };
+      };
+      
     
     detectDevice();
     tryonChatHistory = [];  // Initialize as array instead of undefined
@@ -78,12 +83,10 @@ function initializeWidget(store) {
         console.error('Initial clothing data load failed:', error);
     });
     
-    // Apply theme
-    applyWidgetTheme();
     
     // Render the widget inside #ello-root
     renderWidget();
-    
+
     // Add a simple test to make sure the widget is visible
     setTimeout(() => {
         const widget = document.getElementById('virtualTryonWidget');
@@ -111,18 +114,17 @@ function initializeWidget(store) {
     }
 }
 
-// Render the widget HTML into .ello-panel
 function renderWidget() {
-    const panel = document.querySelector('.ello-panel');
+    const panel = document.getElementById('ello-root'); // ← mount inside #ello-root
     if (!panel) {
-        console.error('.ello-panel element not found');
+        console.error('#ello-root element not found');
         return;
     }
     
     console.log('Rendering widget into .ello-panel');
-    
-    // Inject the widget HTML
-    panel.innerHTML = `
+
+// Inject the widget HTML
+panel.innerHTML = `
         <div id="virtualTryonWidget" class="virtual-tryon-widget widget-minimized">
             <!-- Header -->
             <div class="widget-header">
@@ -270,6 +272,9 @@ function renderWidget() {
         </div>
     `;
     
+    // Now that the widget exists, apply theme
+applyWidgetTheme();
+
     // Add event listeners for widget interactions
     const widget = document.getElementById('virtualTryonWidget');
     if (widget) {
@@ -280,6 +285,8 @@ function renderWidget() {
         });
     }
 }
+
+
 // Configuration
 const WEBHOOK_URL = 'https://ancesoftware.app.n8n.cloud/webhook/virtual-tryon-production';
         
@@ -296,6 +303,8 @@ let isAndroid = false;
 // Supabase Configuration
 const SUPABASE_URL = 'https://rwmvgwnebnsqcyhhurti.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ3bXZnd25lYm5zcWN5aGh1cnRpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MDc1MTgsImV4cCI6MjA2Mzk4MzUxOH0.OYTXiUBDN5IBlFYDHN3MyCwFUkSb8sgUOewBeSY01NY';
+// Global helper: Shopify GID -> numeric ID (for /cart/add.js)
+const gidToNumericId = gid => (gid || '').toString().split('/').pop();
 
 
 
@@ -363,7 +372,8 @@ function isClothingItem(product) {
             return true;
         }
     }
-    
+
+
     // Additional smart checks
     if (hasClothingSizeVariants(product)) {
         return true;
@@ -406,56 +416,46 @@ function isLikelyClothingByName(name) {
 // Dynamic clothing data from Supabase
 let sampleClothing = [];
 
-// Load clothing data from active_clothing_items view
-// Load clothing data based on store configuration
 async function loadClothingData() {
     try {
         // Wait for store configuration to be available
         let storeConfig = window.ELLO_STORE_CONFIG;
-        
-        // If not available yet, wait a bit and try again
+
         if (!storeConfig) {
             console.log('⏳ Store config not ready, waiting...');
             await new Promise(resolve => setTimeout(resolve, 1000));
             storeConfig = window.ELLO_STORE_CONFIG;
         }
-        
+
         // Final fallback if still not available
         if (!storeConfig) {
             storeConfig = {
                 storeId: window.ELLO_STORE_ID || 'default-store',
                 storeName: window.ELLO_STORE_NAME || 'default-name',
-                clothingPopulationType: 'supabase', // Changed default to supabase
+                clothingPopulationType: 'shopify',
                 planName: 'STARTER'
             };
             console.log('⚠️ Using fallback config:', storeConfig);
         }
-        
+
         console.log('🔄 Loading clothing data with configuration:', storeConfig);
-        console.log('🔄 Clothing population type:', storeConfig.clothingPopulationType);
-        
-        if (storeConfig.clothingPopulationType === 'supabase') {
-            console.log('🗄️ Loading from Supabase...');
-            await loadClothingFromSupabase(storeConfig);
-        } else {
-            console.log('🛍️ Loading from Shopify...');
-            await loadClothingFromShopify(storeConfig);
-        }
-        
+
+        // Always load from Shopify now
+        await loadClothingFromShopify(storeConfig);
+
         // Refresh UI if widget is open
         if (widgetOpen && currentMode === 'tryon') {
             await populateFeaturedAndQuickPicks();
         }
-        
+
     } catch (error) {
         console.error('❌ Error loading clothing data:', error);
-        
-        // Show user-friendly error message
+
         if (typeof showSuccessNotification === 'function') {
             showSuccessNotification('Connection Error', 'Unable to load products. Using demo data.', 5000);
         }
-        
-        // Use comprehensive demo data
+
+        // DEMO fallback
         sampleClothing = [
             {
                 id: 'demo-shirt-1',
@@ -492,192 +492,117 @@ async function loadClothingData() {
                           { id: '7', title: 'Large', price: 89.99, available: true, size: 'L' }]
             }
         ];
-        
+
         console.log('Using demo data with', sampleClothing.length, 'items');
     }
 }
 
-// Load clothing from Shopify
+
+// ---- Shopify via Storefront GraphQL (replaces old products.json version)
 async function loadClothingFromShopify(storeConfig) {
-    // For Shopify, we need to use the storeName as the Shopify store ID
-    // storeName from the script tag contains the actual Shopify store ID (e.g., "m8ir6h-8k")
-    const shopifyStoreId = storeConfig.storeName || 'm8ir6h-8k';
-    const storeId = storeConfig.storeId || 'default-store';
-    console.log('🛍️ Loading products from Shopify store ID:', shopifyStoreId);
-    console.log('🛍️ Supabase store ID:', storeId);
-
-    // Try multiple approaches to access Shopify store
-    const possibleUrls = [
-        `https://${shopifyStoreId}.myshopify.com/products.json`,  // Primary: use Shopify store ID
-        `https://${shopifyStoreId.replace(/[^a-zA-Z0-9-]/g, '').toLowerCase()}.myshopify.com/products.json`,
-        `https://${shopifyStoreId.replace(/\s+/g, '-')}.myshopify.com/products.json`,
-        `https://${shopifyStoreId.replace(/\s+/g, '')}.myshopify.com/products.json`
-    ];
-
-    let successfulResponse = null;
-    let lastError = null;
-
-    for (const url of possibleUrls) {
-        try {
-            console.log('🛍️ Trying URL:', url);
-            
-            // Try without CORS first (JSONP-like approach)
-            const response = await fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                }
-            });
-            
-            if (response.ok) {
-                successfulResponse = response;
-                console.log('🛍️ Successfully connected to:', url);
-                break;
-            } else {
-                console.log('🛍️ Failed with status:', response.status, 'for URL:', url);
+    const SHOP_DOMAIN = window.ELLO_SHOP_DOMAIN;
+    const TOKEN = window.ELLO_STOREFRONT_TOKEN;
+    if (!SHOP_DOMAIN || !TOKEN) throw new Error('Missing Shopify creds from loader');
+  
+    // Minimal client
+    async function sf(query, variables = {}) {
+      const res = await fetch(`https://${SHOP_DOMAIN}/api/2024-10/graphql.json`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Shopify-Storefront-Access-Token': TOKEN
+        },
+        body: JSON.stringify({ query, variables })
+      });
+      const json = await res.json();
+      if (!res.ok || json.errors) {
+        console.error('Storefront error:', json.errors || res.statusText);
+        throw new Error('Shopify Storefront API error');
+      }
+      return json.data;
+    }
+  
+    const Q_PRODUCTS = `
+      query Products($first:Int!, $after:String) {
+        products(first:$first, after:$after, sortKey:CREATED_AT, reverse:true) {
+          edges {
+            cursor
+            node {
+              id handle title vendor productType tags
+              featuredImage { url width height altText }
+              images(first:6) { edges { node { url width height altText } } }
+              variants(first:20) {
+                edges { node {
+                  id title availableForSale
+                  price { amount currencyCode }
+                  selectedOptions { name value }
+                } }
+              }
             }
-        } catch (error) {
-            console.log('🛍️ Error trying URL:', url, error.message);
-            lastError = error;
+          }
+          pageInfo { hasNextPage }
         }
-    }
-
-    if (!successfulResponse) {
-        console.error('❌ All Shopify URLs failed. Last error:', lastError);
-        throw new Error(`Unable to access Shopify store: ${storeName}. Please check the store name and ensure the store is accessible.`);
-    }
-
-    const data = await successfulResponse.json();
-    
-    if (!data.products || !Array.isArray(data.products)) {
-        throw new Error('Invalid data format received from Shopify');
-    }
-
-    console.log('✅ Shopify products loaded:', data.products.length);
-
-    // Convert Shopify products to widget format
-    const allProducts = data.products
-        .filter(product => product && product.handle && product.title)
-        .map(product => {
-            const firstVariant = product.variants?.[0] || {};
-            const firstImage = product.images?.[0] || {};
-            
+      }
+    `;
+  
+    function normalize(conn) {
+        const edges = conn?.edges || [];
+        return {
+          items: edges.map(e => {
+            const p = e.node;
+            const img = p.featuredImage || p.images?.edges?.[0]?.node || null;
+      
+            const variants = (p.variants?.edges || []).map(v => ({
+              id: v.node.id,                                 // GID
+              title: v.node.title,
+              available: !!v.node.availableForSale,
+              price: Number(v.node.price?.amount || 0),
+              currency: v.node.price?.currencyCode || 'USD',
+              size:  v.node.selectedOptions?.find(o => o.name === 'Size')?.value || '',
+              color: v.node.selectedOptions?.find(o => o.name === 'Color')?.value || ''
+            }));
+      
+            const minPrice = variants.length
+              ? Math.min(...variants.map(v => v.price || Infinity))
+              : 0;
+      
             return {
-                id: product.handle,
-                name: product.title,
-                price: parseFloat(firstVariant.price || 0),
-                category: product.product_type?.toLowerCase() || 'clothing',
-                tags: product.tags || [],
-                color: getColorFromProduct(product),
-                image_url: firstImage.src || '',
-                product_url: `https://${shopifyStoreId}.myshopify.com/products/${product.handle}`,
-                shopify_product_id: product.id,
-                data_source: 'shopify',
-                variants: (product.variants || []).map(variant => ({
-                    id: variant.id,
-                    title: variant.title,
-                    price: parseFloat(variant.price || 0),
-                    available: variant.available || false,
-                    size: variant.option1,
-                    color: variant.option2,
-                    option3: variant.option3
-                }))
+              id: p.handle,
+              name: p.title,
+              brand: p.vendor || '',
+              category: (p.productType || 'clothing').toLowerCase(),
+              image_url: img?.url || '',
+              product_url: `https://${SHOP_DOMAIN}/products/${p.handle}`,
+              data_source: 'shopify',
+              price: Number.isFinite(minPrice) ? minPrice : 0,        // ← product-level price
+              color: variants.find(v => v.color)?.color || '',        // ← fallback color
+              shopify_product_gid: p.id,                               // ← product GID
+              shopify_product_id: (p.id || '').toString().split('/').pop(), // ← numeric ID for ShopifyAnalytics
+              variants
             };
-        });
-
-    // FILTER TO ONLY CLOTHING ITEMS
-    sampleClothing = allProducts.filter(product => isClothingItem(product));
-
-    console.log(`✅ Loaded ${allProducts.length} total products from Shopify`);
-    console.log(`✅ Filtered to ${sampleClothing.length} clothing items`);
-}
-
-// Load clothing from Supabase
-async function loadClothingFromSupabase(storeConfig) {
-    console.log('🗄️ Loading products from Supabase for store:', storeConfig.storeId);
-    console.log('🗄️ Store config:', storeConfig);
-    
-    try {
-        const url = `https://rwmvgwnebnsqcyhhurti.supabase.co/rest/v1/clothing_items?store_id=eq.${storeConfig.storeId}&active=eq.true`;
-        console.log('🗄️ Fetching from URL:', url);
-        
-        // Fetch clothing items from Supabase
-        const response = await fetch(url, {
-            headers: {
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                'Content-Type': 'application/json',
-            }
-        });
-
-        console.log('🗄️ Response status:', response.status);
-        console.log('🗄️ Response ok:', response.ok);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log('🗄️ Raw data received:', data);
-        
-        if (!Array.isArray(data)) {
-            throw new Error('Invalid data format received from Supabase');
-        }
-
-        console.log('✅ Supabase products loaded:', data.length);
-
-        // Convert Supabase products to widget format
-        const allProducts = data
-            .filter(item => {
-                const isValid = item && item.name && item.image_url;
-                if (!isValid) {
-                    console.log('🗄️ Filtered out item:', item);
-                }
-                return isValid;
-            })
-            .map(item => {
-                const converted = {
-                    id: item.item_id || item.id || `supabase_${item.name.toLowerCase().replace(/\s+/g, '_')}`,
-                    name: item.name,
-                    price: parseFloat(item.price || 0),
-                    category: item.category?.toLowerCase() || 'clothing',
-                    tags: item.tags || [],
-                    color: item.color || 'multicolor',
-                    image_url: item.image_url,
-                    product_url: item.product_url || '#',
-                    data_source: 'supabase',
-                    variants: item.variants || [{
-                        id: item.item_id || item.id,
-                        title: 'Default',
-                        price: parseFloat(item.price || 0),
-                        available: true,
-                        size: 'M'
-                    }]
-                };
-                console.log('🗄️ Converted item:', converted);
-                return converted;
-            });
-
-        console.log('🗄️ All converted products:', allProducts);
-
-        // FILTER TO ONLY CLOTHING ITEMS
-        sampleClothing = allProducts.filter(product => {
-            const isClothing = isClothingItem(product);
-            if (!isClothing) {
-                console.log('🗄️ Filtered out non-clothing item:', product.name, 'category:', product.category);
-            }
-            return isClothing;
-        });
-
-        console.log(`✅ Loaded ${allProducts.length} total products from Supabase`);
-        console.log(`✅ Filtered to ${sampleClothing.length} clothing items`);
-        console.log('✅ Final sampleClothing:', sampleClothing);
-
-    } catch (error) {
-        console.error('❌ Error loading from Supabase:', error);
-        throw error;
+          }),
+          cursor: edges.at(-1)?.cursor || null,
+          hasNext: !!conn?.pageInfo?.hasNextPage
+        };
+      }
+      
+  
+    // Page through ~80 items
+    let after = null;
+    const all = [];
+    for (let i = 0; i < 2; i++) {
+      const data = await sf(Q_PRODUCTS, { first: 40, after });
+      const { items, cursor, hasNext } = normalize(data.products);
+      all.push(...items);
+      if (!hasNext) break;
+      after = cursor;
     }
-}
+  
+    // Filter clothing only (uses your existing helpers)
+    sampleClothing = all.filter(isClothingItem);
+    console.log(`✅ Shopify products: ${all.length}, clothing: ${sampleClothing.length}`);
+  }
+
 
 // Utility function for retry logic
 async function fetchWithRetry(url, options, maxRetries = 3) {
@@ -714,7 +639,7 @@ if (product) {
 
 // Method 2: Check Shopify analytics object
 if (window.ShopifyAnalytics && window.ShopifyAnalytics.meta && window.ShopifyAnalytics.meta.product) {
-const productId = window.ShopifyAnalytics.meta.product.id;
+    const productId = String(window.ShopifyAnalytics.meta.product.id);
 const product = sampleClothing.find(item => item.shopify_product_id === productId);
 if (product) {
     console.log('✅ Found product via Shopify analytics:', product);
@@ -1169,7 +1094,7 @@ const quickPicksGrid = document.getElementById('quickPicksGrid');
 let quickPicksHTML = '';
 quickPicks.forEach(item => {
 quickPicksHTML += `
-    <div class="quick-pick-item" onclick="selectClothing('${item.id}')">
+    <div class="quick-pick-item" onclick="selectClothing(this, '${item.id}')">
         <img src="${item.image_url}" alt="${item.name}" class="quick-pick-image">
         <div class="quick-pick-name">${item.name}</div>
         <div class="quick-pick-price">$${item.price.toFixed(2)}</div>
@@ -1194,21 +1119,21 @@ function selectFeaturedClothing() {
     updateTryOnButton();
 }
 
-function selectClothing(clothingId) {
+function selectClothing(el, clothingId) {
     selectedClothing = clothingId;
-    
+
     // Clear featured selection
     const featuredContainer = document.getElementById('featuredItem');
-    featuredContainer.classList.remove('selected');
-    
+    featuredContainer?.classList.remove('selected');
+
     // Clear other quick pick selections
     document.querySelectorAll('.quick-pick-item').forEach(item => {
         item.classList.remove('selected');
     });
-    
+
     // Highlight selected item
-    event.target.closest('.quick-pick-item').classList.add('selected');
-    
+    el.classList.add('selected');
+
     updateTryOnButton();
 }
 
@@ -1617,7 +1542,7 @@ function renderBrowserGrid() {
         console.log(`Item ${index}:`, item.name, 'Image:', item.image_url);
         
         gridHTML += `
-            <div class="browser-clothing-card ${selectedClass}" onclick="selectClothingFromBrowser('${item.id}')">
+            <div class="browser-clothing-card ${selectedClass}" onclick="selectClothingFromBrowser(this, '${item.id}')">
                 <img src="${item.image_url}" alt="${item.name}" loading="lazy">
                 <div class="browser-card-name">${item.name}</div>
             </div>
@@ -1629,19 +1554,20 @@ function renderBrowserGrid() {
     console.log('Grid display style:', grid.style.display);
 }
 
-function selectClothingFromBrowser(clothingId) {
+function selectClothingFromBrowser(el, clothingId) {
     selectedClothing = clothingId;
-    
+
     document.querySelectorAll('.browser-clothing-card').forEach(card => {
         card.classList.remove('selected');
     });
-    
-    event.target.closest('.browser-clothing-card').classList.add('selected');
-    
+
+    el.classList.add('selected');
+
     closeClothingBrowser();
     populateFeaturedAndQuickPicks();
     updateTryOnButton();
 }
+
 
 function handleBrowserSearch() {
     const searchTerm = document.getElementById('browserSearch').value.toLowerCase().trim();
@@ -1650,9 +1576,10 @@ function handleBrowserSearch() {
         filteredClothing = [...sampleClothing];
     } else {
         filteredClothing = sampleClothing.filter(item => {
-            const matchesName = item.name.toLowerCase().includes(searchTerm);
-            const matchesCategory = item.category.toLowerCase().includes(searchTerm);
-            const matchesColor = item.color.toLowerCase().includes(searchTerm);
+            const matchesName = (item.name || '').toLowerCase().includes(searchTerm);
+const matchesCategory = (item.category || '').toLowerCase().includes(searchTerm);
+const matchesColor = (item.color || '').toLowerCase().includes(searchTerm);
+
             
             return matchesName || matchesCategory || matchesColor;
         });
@@ -1683,7 +1610,8 @@ function updateBrowserDisplay() {
             
             const cardElement = document.createElement('div');
             cardElement.className = `browser-clothing-card ${selectedClass}`;
-            cardElement.onclick = () => selectClothingFromBrowser(item.id);
+            cardElement.onclick = function () { selectClothingFromBrowser(this, item.id); };
+
             
             cardElement.innerHTML = `
                 <img src="${item.image_url}" alt="${item.name}" loading="lazy">
@@ -1769,7 +1697,7 @@ resultSection.innerHTML = `
         <img src="${result.result_image_url}" alt="Try-on result" class="result-image" onclick="openImageModal('${result.result_image_url}')">
         <p>How do you like the ${clothing.name}?</p>
         <div class="buy-now-container">
-            <button class="buy-now-btn" onclick="handleBuyNow('${clothing.id}', '${result.result_image_url}', '${currentTryOnId}')">
+            <button class="buy-now-btn" onclick="handleBuyNow(this, '${clothing.id}', '${result.result_image_url}', '${currentTryOnId}')">
                 <div class="loading-spinner"></div>
                 <span class="btn-text">
                     <span class="cart-icon">🛒</span>
@@ -1792,7 +1720,7 @@ resultSection.innerHTML = `
             <img src="${placeholderUrl}" alt="Try-on result" class="result-image" onclick="openImageModal('${placeholderUrl}')">
             <p>How do you like the ${clothing.name}?</p>
             <div class="buy-now-container">
-                <button class="buy-now-btn" onclick="handleBuyNow('${clothing.id}', '${placeholderUrl}', '${currentTryOnId}')">
+                <button class="buy-now-btn" onclick="handleBuyNow(this, '${clothing.id}', '${placeholderUrl}', '${currentTryOnId}')">
                     <div class="loading-spinner"></div>
                     <span class="btn-text">
                         <span class="cart-icon">🛒</span>
@@ -1817,7 +1745,7 @@ resultSection.innerHTML = `
         <img src="${placeholderUrl}" alt="Try-on result" class="result-image" onclick="openImageModal('${placeholderUrl}')">
         <p>How do you like the ${clothing.name}?</p>
         <div class="buy-now-container">
-            <button class="buy-now-btn" onclick="handleBuyNow('${clothing.id}', '${placeholderUrl}', '${currentTryOnId}')">
+            <button class="buy-now-btn" onclick="handleBuyNow(this, '${clothing.id}', '${placeholderUrl}', '${currentTryOnId}')">
                 <div class="loading-spinner"></div>
                 <span class="btn-text">
                     <span class="cart-icon">🛒</span>
@@ -2182,8 +2110,8 @@ console.error('❌ Error updating cart display:', error);
 }
 }
 
-async function handleBuyNow(clothingId, tryonResultUrl, tryOnId) {
-const buyBtn = event.target.closest('.buy-now-btn');
+async function handleBuyNow(btnEl, clothingId, tryonResultUrl, tryOnId) {
+    const buyBtn = btnEl.closest('.buy-now-btn') || btnEl;  
 const clothing = sampleClothing.find(item => item.id === clothingId);
 
 console.log('handleBuyNow called for:', clothing);
@@ -2253,9 +2181,9 @@ try {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            id: variantToAdd.id,
+            id: gidToNumericId(variantToAdd.id), // ← convert GID → numeric
             quantity: 1
-        })
+        })        
     });
 
     if (cartResponse.ok) {
@@ -2599,20 +2527,17 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
-if (isMobile) {
-    window.addEventListener('popstate', function(event) {
-        if (widgetOpen) {
-            closeWidget();
-            event.preventDefault();
-        }
-    });
-}
+window.addEventListener('popstate', function(event) {
+    if (isMobile && widgetOpen) {
+        closeWidget();
+        event.preventDefault();
+    }
+});
 
-// THEME: Fetch and apply theme from Supabase
 async function applyWidgetTheme() {
     const storeId = window.ELLO_STORE_ID || 'default_store';
-    const widget = document.getElementById('virtualTryonWidget');
     let theme = 'white'; // default
+
     try {
         const url = `https://rwmvgwnebnsqcyhhurti.supabase.co/rest/v1/business_settings?store_id=eq.${storeId}`;
         const resp = await fetch(url, {
@@ -2631,11 +2556,14 @@ async function applyWidgetTheme() {
     } catch (e) {
         console.warn('Theme fetch failed, using default.');
     }
-    // Remove any previous theme class
+
+    const widget = document.getElementById('virtualTryonWidget');
+    if (!widget) return; // ← guard
+
     widget.classList.remove('theme-white', 'theme-cream', 'theme-black');
-    // Add the new theme class
     widget.classList.add(`theme-${theme}`);
 }
+
 
 // ============================================================================
 // WARDROBE FUNCTIONALITY
@@ -3036,7 +2964,7 @@ async function addWardrobeItemToCart(tryOnId) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                id: variantToAdd.id,
+                id: gidToNumericId(variantToAdd.id), // ← convert GID → numeric
                 quantity: 1
             })
         });
@@ -3122,5 +3050,4 @@ async function addWardrobeItemToCart(tryOnId) {
         alert('❌ Network error: ' + error.message);
     }
 }
-
 
