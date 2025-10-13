@@ -38,14 +38,13 @@
   frame.sandbox = 'allow-scripts allow-forms allow-same-origin allow-popups';
   frame.loading = 'eager';
   frame.style.cssText = `
-    width:360px;height:520px;border:0;border-radius:16px;
+    width:360px;height:520px;border:0;outline:none;border-radius:16px;
     box-shadow:0 8px 24px rgba(0,0,0,.18);
-    transition:all .25s ease;
-    background:transparent;
-    opacity:0;
-    visibility:hidden;
-    transform:scale(.98);
+    background:transparent;display:block;
+    opacity:0;visibility:hidden;transform:translateZ(0) scale(.98);
+    transition:opacity .18s ease, transform .18s ease, box-shadow .18s ease, border-radius .18s ease;
   `;
+  frame.setAttribute('tabindex', '-1');
   container.appendChild(frame);
   
   console.log('Iframe created with src:', frame.src);
