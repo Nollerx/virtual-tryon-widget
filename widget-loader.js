@@ -1,7 +1,12 @@
 (function () {
+  console.log('Widget loader starting...');
+  
   // TODO: set to your CDN origin that serves widget.html + assets
-  const WIDGET_BASE_URL = "https://nollerx.github.io/virtual-tryon-widget"; 
+  const WIDGET_BASE_URL = "https://nollerx.github.io/MY-HOSTED-WIDGET9"; 
   const ALLOWED_ORIGIN = new URL(WIDGET_BASE_URL).origin;
+  
+  console.log('WIDGET_BASE_URL:', WIDGET_BASE_URL);
+  console.log('ALLOWED_ORIGIN:', ALLOWED_ORIGIN);
 
   // Read attributes from the embedding script tag
   const scriptTag = document.currentScript;
@@ -11,6 +16,8 @@
     primary: scriptTag?.dataset?.primary || "#111827",
     accent: scriptTag?.dataset?.accent || "#6EE7B7"
   };
+  
+  console.log('Store config:', { storeId, storeName, theme });
 
   // 1) Container
   const container = document.createElement('div');
@@ -37,6 +44,9 @@
     background:transparent;
   `;
   container.appendChild(frame);
+  
+  console.log('Iframe created with src:', frame.src);
+  console.log('Container added to DOM:', container);
 
   // 3) Helpers for sizing
   function expandToOverlay() {
@@ -86,12 +96,13 @@
 
   // 5) Proactively send config after load (in case handshake races)
   frame.addEventListener('load', () => {
+    console.log('Iframe loaded, sending config...');
     frame.contentWindow?.postMessage({
       type: 'ELLO_CONFIG',
       payload: { storeId, storeName, theme }
     }, ALLOWED_ORIGIN);
+    console.log('Config sent to iframe');
   });
 })();
-
 
 
