@@ -16,8 +16,12 @@
     primary: scriptTag?.dataset?.primary || "#111827",
     accent: scriptTag?.dataset?.accent || "#6EE7B7"
   };
-  
+  // NEW: Shopify creds from the embed tag
+const shopDomain = scriptTag?.dataset?.shopDomain || "";
+const storefrontToken = scriptTag?.dataset?.storefrontToken || "";
   console.log('Store config:', { storeId, storeName, theme });
+  if (!shopDomain) console.warn('[Ello] Missing data-shop-domain on embed tag.');
+  if (!storefrontToken) console.warn('[Ello] Missing data-storefront-token on embed tag.');
 
   // 1) Container
   const container = document.createElement('div');
@@ -33,17 +37,21 @@
   // 2) Iframe
   const frame = document.createElement('iframe');
   frame.id = 'ello-frame';
-  frame.src = `${WIDGET_BASE_URL}/widget.html?store_id=${encodeURIComponent(storeId)}&store_name=${encodeURIComponent(storeName)}`;
+ const params = new URLSearchParams({
+  store_id: storeId, store_name: storeName, primary: theme.primary, accent: theme.accent,
+  shopDomain
+ });
+  frame.src = `${WIDGET_BASE_URL}/widget.html?${params.toString()}`;
   frame.allow = 'fullscreen';
   frame.sandbox = 'allow-scripts allow-forms allow-same-origin allow-popups';
   frame.loading = 'eager';
   frame.style.cssText = `
-  +    width:64px;height:64px;border:0;outline:none;border-radius:12px;
-  +    box-shadow:none;
-  +    background:transparent;display:block;
-  +    opacity:0;visibility:hidden;transform:translateZ(0) scale(.98);
-    transition:opacity .18s ease, transform .18s ease, box-shadow .18s ease, border-radius .18s ease;
-  `;
+  width:64px;height:64px;border:0;outline:none;border-radius:12px;z-index:2147483646;
+  box-shadow:none;
+  background:transparent;display:block;
+  opacity:0;visibility:hidden;transform:translateZ(0) scale(.98);
+  transition:opacity .18s ease, transform .18s ease, box-shadow .18s ease, border-radius .18s ease;
+`;
   frame.setAttribute('tabindex', '-1');
   container.appendChild(frame);
   
@@ -61,6 +69,11 @@
     boxShadow:'0 12px 40px rgba(0,0,0,.22)'
   });
 }
+// Re-apply panel size if viewport changes while open
++ window.addEventListener('resize', () => {
+   const open = frame.style.width && frame.style.width !== '64px';
+   if (open) expandToOverlay();
+});
 function collapseToDock() {
    Object.assign(frame.style, {
      position:'static',
@@ -107,7 +120,7 @@ function collapseToDock() {
         // iFrame requested config on load
         frame.contentWindow?.postMessage({
           type: 'ELLO_CONFIG',
-          payload: { storeId, storeName, theme }
+          payload: { storeId, storeName, theme, shopDomain, storefrontToken }
         }, ALLOWED_ORIGIN);
         break;
       default:
@@ -121,7 +134,7 @@ function collapseToDock() {
     console.log('Iframe loaded, sending config...');
     frame.contentWindow?.postMessage({
       type: 'ELLO_CONFIG',
-      payload: { storeId, storeName, theme }
+      payload: { storeId, storeName, theme, shopDomain, storefrontToken }
     }, ALLOWED_ORIGIN);
     console.log('Config sent to iframe');
   });
