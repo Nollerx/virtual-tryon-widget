@@ -42,7 +42,9 @@ const storefrontToken = scriptTag?.dataset?.storefrontToken || "";
   shopDomain
  });
   frame.src = `${WIDGET_BASE_URL}/widget.html?${params.toString()}`;
-  frame.allow = 'fullscreen';
+  frame.allow = 'fullscreen; camera; microphone';
+frame.setAttribute('allowfullscreen', '');
+frame.title = 'Ello Virtual Try-On'; // a11y
   frame.sandbox = 'allow-scripts allow-forms allow-same-origin allow-popups';
   frame.loading = 'eager';
   frame.style.cssText = `
@@ -70,7 +72,7 @@ const storefrontToken = scriptTag?.dataset?.storefrontToken || "";
   });
 }
 // Re-apply panel size if viewport changes while open
-+ window.addEventListener('resize', () => {
+ window.addEventListener('resize', () => {
    const open = frame.style.width && frame.style.width !== '64px';
    if (open) expandToOverlay();
 });
@@ -101,6 +103,11 @@ function collapseToDock() {
         console.log('Widget ready, showing frame');
         showFrame();
         collapseToDock();
+         // also push config immediately on READY
+frame.contentWindow?.postMessage({
+ type: 'ELLO_CONFIG',
+  payload: { storeId, storeName, theme, shopDomain, storefrontToken }
+}, ALLOWED_ORIGIN);
         break;
       case 'ELLO_OPEN_PANEL':
         expandToOverlay();
