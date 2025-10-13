@@ -6,7 +6,7 @@
   <title>Ello Widget</title>
   <link rel="stylesheet" href="./widget.css" />
   <script>
-    // Handshake: ask parent for config right after DOM is ready
+    // Handshake: ask parent for config right after DOM is read
     document.addEventListener('DOMContentLoaded', () => {
       window.parent?.postMessage({ type: 'ELLO_GET_CONFIG' }, '*');
     });
