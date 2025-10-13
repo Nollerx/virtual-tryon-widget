@@ -38,10 +38,13 @@
   frame.sandbox = 'allow-scripts allow-forms allow-same-origin allow-popups';
   frame.loading = 'eager';
   frame.style.cssText = `
-    width:72px;height:72px;border:0;border-radius:16px;
+    width:360px;height:520px;border:0;border-radius:16px;
     box-shadow:0 8px 24px rgba(0,0,0,.18);
     transition:all .25s ease;
     background:transparent;
+    opacity:0;
+    visibility:hidden;
+    transform:scale(.98);
   `;
   container.appendChild(frame);
   
@@ -50,15 +53,36 @@
 
   // 3) Helpers for sizing
   function expandToOverlay() {
+    // Lock page scroll
+    document.body.style.overflow = 'hidden';
+    
     Object.assign(frame.style, {
-      position:'fixed', inset:'0', width:'100vw', height:'100vh',
-      borderRadius:'0', boxShadow:'none'
+      position:'fixed', 
+      inset:'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)',
+      width:'100vw', 
+      height:'100vh',
+      borderRadius:'0', 
+      boxShadow:'none'
     });
   }
   function collapseToDock() {
+    // Restore page scroll
+    document.body.style.overflow = '';
+    
     Object.assign(frame.style, {
-      position:'static', width:'72px', height:'72px',
-      borderRadius:'16px', boxShadow:'0 8px 24px rgba(0,0,0,.18)'
+      position:'static', 
+      width:'360px', 
+      height:'520px',
+      borderRadius:'16px', 
+      boxShadow:'0 8px 24px rgba(0,0,0,.18)'
+    });
+  }
+  
+  function showFrame() {
+    Object.assign(frame.style, {
+      opacity:'1',
+      visibility:'visible',
+      transform:'scale(1)'
     });
   }
 
@@ -67,6 +91,10 @@
     if (!e.origin || e.origin !== ALLOWED_ORIGIN) return;
     const msg = e.data || {};
     switch (msg.type) {
+      case 'ELLO_READY':
+        console.log('Widget ready, showing frame');
+        showFrame();
+        break;
       case 'ELLO_OPEN_PANEL':
         expandToOverlay();
         break;
