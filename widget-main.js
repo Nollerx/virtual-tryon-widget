@@ -9,8 +9,10 @@ function post(type, payload) {
 }
 
 window.addEventListener('message', (e) => {
+  console.log('Received message in iframe:', e.data);
   const { type, payload } = e.data || {};
   if (type === 'ELLO_CONFIG') {
+    console.log('Received ELLO_CONFIG:', payload);
     ELLO_STORE = { id: payload.storeId, name: payload.storeName, theme: payload.theme };
     // Now safe to init the widget UI
     initializeWidget(ELLO_STORE);
@@ -33,6 +35,8 @@ ro.observe(document.documentElement);
 // Make sure initializeWidget only mounts inside #ello-root
 function initializeWidget(store) {
     console.log("initializeWidget called with store:", store);
+    console.log("Document ready state:", document.readyState);
+    console.log("ello-root element:", document.getElementById('ello-root'));
     
     // Set up global store config for existing code compatibility
     window.ELLO_STORE_ID = store.id;
@@ -61,6 +65,18 @@ function initializeWidget(store) {
     // Render the widget inside #ello-root
     renderWidget();
     
+    // Add a simple test to make sure the widget is visible
+    setTimeout(() => {
+        const widget = document.getElementById('virtualTryonWidget');
+        if (widget) {
+            console.log('Widget found:', widget);
+            console.log('Widget classes:', widget.className);
+            console.log('Widget style:', widget.style.cssText);
+        } else {
+            console.error('Widget not found after render');
+        }
+    }, 100);
+    
     window.addEventListener('orientationchange', handleOrientationChange);
     window.addEventListener('resize', handleOrientationChange);
     preventZoom();
@@ -83,6 +99,8 @@ function renderWidget() {
         console.error('ello-root element not found');
         return;
     }
+    
+    console.log('Rendering widget into #ello-root');
     
     // Inject the widget HTML
     root.innerHTML = `
