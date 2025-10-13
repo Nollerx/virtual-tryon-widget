@@ -1,19 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html>
 <head>
   <meta charset="utf-8" />
+  <title>Ello Loader Demo</title>
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ello Widget</title>
-  <link rel="stylesheet" href="./widget.css" />
-  <script>
-    // Handshake: ask parent for config right after DOM is ready
-    document.addEventListener('DOMContentLoaded', () => {
-      window.parent?.postMessage({ type: 'ELLO_GET_CONFIG' }, '*');
-    });
-  </script>
-  <script defer src="./widget-main.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; min-height: 200vh; }
+    .box { width: 320px; height: 200px; background:#f3f4f6; margin:40px; display:flex;align-items:center;justify-content:center;border-radius:12px; }
+  </style>
 </head>
 <body>
-  <div id="ello-root"></div>
+  <h1>Merchant Page Demo</h1>
+  <div class="box">Host page content</div>
+
+  <!-- Simulated install snippet -->
+  <script
+    src="./widget-loader.js"
+    data-store-id="demo-store-123"
+    data-store-name="Demo Store"
+    data-primary="#111827"
+    data-accent="#6EE7B7"
+    defer></script>
 </body>
 </html>
