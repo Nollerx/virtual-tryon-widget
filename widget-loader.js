@@ -38,10 +38,10 @@
   frame.sandbox = 'allow-scripts allow-forms allow-same-origin allow-popups';
   frame.loading = 'eager';
   frame.style.cssText = `
-    width:360px;height:520px;border:0;outline:none;border-radius:16px;
-    box-shadow:0 8px 24px rgba(0,0,0,.18);
-    background:transparent;display:block;
-    opacity:0;visibility:hidden;transform:translateZ(0) scale(.98);
+  +    width:64px;height:64px;border:0;outline:none;border-radius:12px;
+  +    box-shadow:none;
+  +    background:transparent;display:block;
+  +    opacity:0;visibility:hidden;transform:translateZ(0) scale(.98);
     transition:opacity .18s ease, transform .18s ease, box-shadow .18s ease, border-radius .18s ease;
   `;
   frame.setAttribute('tabindex', '-1');
@@ -50,32 +50,26 @@
   console.log('Iframe created with src:', frame.src);
   console.log('Container added to DOM:', container);
 
-  // 3) Helpers for sizing
   function expandToOverlay() {
-    // Lock page scroll
-    document.body.style.overflow = 'hidden';
-    
-    Object.assign(frame.style, {
-      position:'fixed', 
-      inset:'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)',
-      width:'100vw', 
-      height:'100vh',
-      borderRadius:'0', 
-      boxShadow:'none'
-    });
-  }
-  function collapseToDock() {
-    // Restore page scroll
-    document.body.style.overflow = '';
-    
-    Object.assign(frame.style, {
-      position:'static', 
-      width:'360px', 
-      height:'520px',
-      borderRadius:'16px', 
-      boxShadow:'0 8px 24px rgba(0,0,0,.18)'
-    });
-  }
+   const isMobile = window.matchMedia('(max-width:768px)').matches;
+   // keep the container fixed at bottom-right; just resize the iframe
+  Object.assign(frame.style, {
+   position:'static',
+    width: isMobile ? '92vw' : '420px',
+   height: isMobile ? '78vh' : '650px',
+  borderRadius: isMobile ? '12px' : '16px',
+    boxShadow:'0 12px 40px rgba(0,0,0,.22)'
+  });
+}
+function collapseToDock() {
+   Object.assign(frame.style, {
+     position:'static',
+     width:'64px',
+     height:'64px',
+     borderRadius:'12px',
+     boxShadow:'none'
+   });
+ }
   
   function showFrame() {
     Object.assign(frame.style, {
@@ -93,6 +87,7 @@
       case 'ELLO_READY':
         console.log('Widget ready, showing frame');
         showFrame();
+        collapseToDock();
         break;
       case 'ELLO_OPEN_PANEL':
         expandToOverlay();
