@@ -115,7 +115,7 @@ function initializeWidget(store) {
 }
 
 function renderWidget() {
-    const panel = document.getElementById('ello-root'); // ← mount inside #ello-root
+    const panel = document.getElementById('ello-root'); // â† mount inside #ello-root
     if (!panel) {
         console.error('#ello-root element not found');
         return;
@@ -129,7 +129,7 @@ panel.innerHTML = `
             <!-- Header -->
             <div class="widget-header">
                 <h3 class="widget-title">Virtual Try-On</h3>
-                <button class="widget-toggle" onclick="closeWidget()" aria-label="Close virtual try-on widget">×</button>
+                <button class="widget-toggle" onclick="closeWidget()" aria-label="Close virtual try-on widget">Ã—</button>
             </div>
 
             <!-- Content -->
@@ -140,7 +140,7 @@ panel.innerHTML = `
                     <!-- Featured Item Section -->
                     <div class="featured-section">
                         <h4 class="section-title">
-                            <span>⭐</span>
+                            <span>â­</span>
                             Featured Today
                         </h4>
                         <div id="featuredItem" class="featured-item" onclick="selectFeaturedClothing()">
@@ -151,19 +151,19 @@ panel.innerHTML = `
                     <!-- Quick Picks Section -->
                     <div class="quick-picks-section">
                         <h4 class="section-title">
-                            <span>🔥</span>
+                            <span>ðŸ”¥</span>
                             Quick Picks
                         </h4>
                         <div id="quickPicksGrid" class="quick-picks-grid">
                             <!-- Quick pick items will be populated here -->
                         </div>
                         <button class="browse-all-btn" onclick="openClothingBrowser()">
-                            <span>👗</span>
+                            <span>ðŸ‘—</span>
                             Browse Full Collection
-                            <span>→</span>
+                            <span>â†’</span>
                         </button>
                         <button class="wardrobe-btn" onclick="openWardrobe()">
-                            <span>👔</span>
+                            <span>ðŸ‘”</span>
                             My Wardrobe
                             <span>(${getWardrobeCount()})</span>
                         </button>
@@ -174,7 +174,7 @@ panel.innerHTML = `
                         <div class="photo-instruction">Upload full body image to get started</div>
                         
                         <div class="photo-upload" onclick="handlePhotoUploadClick()">
-                            <div class="upload-icon">🧍</div>
+                            <div class="upload-icon">ðŸ§</div>
                             <div class="upload-text">Tap to upload full body image</div>
                             <img id="photoPreview" class="photo-preview" style="display: none;">
                             <div id="changePhotoText" class="upload-text" style="display: none; margin-top: 8px; font-size: 12px; color: #6366f1;">Tap to change photo</div>
@@ -183,11 +183,11 @@ panel.innerHTML = `
                         <!-- Mobile Camera Controls -->
                         <div id="cameraControls" class="camera-controls">
                             <button class="camera-option-btn" onclick="takePicture()" type="button">
-                                <span class="icon">📸</span>
+                                <span class="icon">ðŸ“¸</span>
                                 <span>Camera</span>
                             </button>
                             <button class="camera-option-btn" onclick="chooseFromGallery()" type="button">
-                                <span class="icon">🖼️</span>
+                                <span class="icon">ðŸ–¼ï¸</span>
                                 <span>Gallery</span>
                             </button>
                         </div>
@@ -200,15 +200,15 @@ panel.innerHTML = `
                     <!-- Action Buttons -->
                     <div class="action-buttons">
                         <button class="btn btn-secondary" onclick="closeWidget()">
-                            <span>✕</span>
+                            <span>âœ•</span>
                             Close
                         </button>
                         <button class="btn btn-primary" onclick="startTryOn()" id="tryOnBtn" disabled aria-label="Try on selected clothing with your photo. Press Enter to activate.">
-                            <span>✨</span>
+                            <span>âœ¨</span>
                             Try On
                         </button>
                         <button class="btn btn-secondary" onclick="openPanel()" style="margin-top: 8px;">
-                            <span>🔍</span>
+                            <span>ðŸ”</span>
                             Test Open Panel
                         </button>
                     </div>
@@ -260,7 +260,7 @@ panel.innerHTML = `
                 </div>
                 <div class="wardrobe-body">
                     <div id="wardrobeEmpty" class="wardrobe-empty" style="display: none;">
-                        <div class="wardrobe-empty-icon">👔</div>
+                        <div class="wardrobe-empty-icon">ðŸ‘”</div>
                         <h3>Your Wardrobe is Empty</h3>
                         <p>Try on some clothes to see them here!</p>
                     </div>
@@ -359,7 +359,7 @@ function isClothingItem(product) {
         if (productType.includes(excluded) || 
             productName.includes(excluded) ||
             productTags.some(tag => tag.includes(excluded))) {
-            console.log(`❌ Excluded: ${product.name} (matched: ${excluded})`);
+            console.log(`âŒ Excluded: ${product.name} (matched: ${excluded})`);
             return false;
         }
     }
@@ -384,7 +384,7 @@ function isClothingItem(product) {
         return isLikelyClothingByName(productName);
     }
     
-    console.log(`⚠️ Uncertain item excluded: ${product.name} (type: ${productType})`);
+    console.log(`âš ï¸ Uncertain item excluded: ${product.name} (type: ${productType})`);
     return false;
 }
 
@@ -422,7 +422,7 @@ async function loadClothingData() {
         let storeConfig = window.ELLO_STORE_CONFIG;
 
         if (!storeConfig) {
-            console.log('⏳ Store config not ready, waiting...');
+            console.log('â³ Store config not ready, waiting...');
             await new Promise(resolve => setTimeout(resolve, 1000));
             storeConfig = window.ELLO_STORE_CONFIG;
         }
@@ -435,10 +435,10 @@ async function loadClothingData() {
                 clothingPopulationType: 'shopify',
                 planName: 'STARTER'
             };
-            console.log('⚠️ Using fallback config:', storeConfig);
+            console.log('âš ï¸ Using fallback config:', storeConfig);
         }
 
-        console.log('🔄 Loading clothing data with configuration:', storeConfig);
+        console.log('ðŸ”„ Loading clothing data with configuration:', storeConfig);
 
         // Always load from Shopify now
         await loadClothingFromShopify(storeConfig);
@@ -449,7 +449,7 @@ async function loadClothingData() {
         }
 
     } catch (error) {
-        console.error('❌ Error loading clothing data:', error);
+        console.error('âŒ Error loading clothing data:', error);
 
         if (typeof showSuccessNotification === 'function') {
             showSuccessNotification('Connection Error', 'Unable to load products. Using demo data.', 5000);
@@ -574,10 +574,10 @@ async function loadClothingFromShopify(storeConfig) {
               image_url: img?.url || '',
               product_url: `https://${SHOP_DOMAIN}/products/${p.handle}`,
               data_source: 'shopify',
-              price: Number.isFinite(minPrice) ? minPrice : 0,        // ← product-level price
-              color: variants.find(v => v.color)?.color || '',        // ← fallback color
-              shopify_product_gid: p.id,                               // ← product GID
-              shopify_product_id: (p.id || '').toString().split('/').pop(), // ← numeric ID for ShopifyAnalytics
+              price: Number.isFinite(minPrice) ? minPrice : 0,        // â† product-level price
+              color: variants.find(v => v.color)?.color || '',        // â† fallback color
+              shopify_product_gid: p.id,                               // â† product GID
+              shopify_product_id: (p.id || '').toString().split('/').pop(), // â† numeric ID for ShopifyAnalytics
               variants
             };
           }),
@@ -600,7 +600,7 @@ async function loadClothingFromShopify(storeConfig) {
   
     // Filter clothing only (uses your existing helpers)
     sampleClothing = all.filter(isClothingItem);
-    console.log(`✅ Shopify products: ${all.length}, clothing: ${sampleClothing.length}`);
+    console.log(`âœ… Shopify products: ${all.length}, clothing: ${sampleClothing.length}`);
   }
 
 
@@ -619,7 +619,7 @@ try {
 }
 
 
-// 🎯 ADD THIS NEW FUNCTION HERE:
+// ðŸŽ¯ ADD THIS NEW FUNCTION HERE:
 function detectCurrentProduct() {
 // Method 1: Check URL for product handle (most reliable)
 const urlPath = window.location.pathname;
@@ -632,7 +632,7 @@ console.log('Detected product handle from URL:', productHandle);
 // Find matching product in our loaded data
 const product = sampleClothing.find(item => item.id === productHandle);
 if (product) {
-    console.log('✅ Found matching product:', product);
+    console.log('âœ… Found matching product:', product);
     return product;
 }
 }
@@ -642,7 +642,7 @@ if (window.ShopifyAnalytics && window.ShopifyAnalytics.meta && window.ShopifyAna
     const productId = String(window.ShopifyAnalytics.meta.product.id);
 const product = sampleClothing.find(item => item.shopify_product_id === productId);
 if (product) {
-    console.log('✅ Found product via Shopify analytics:', product);
+    console.log('âœ… Found product via Shopify analytics:', product);
     return product;
 }
 }
@@ -656,7 +656,7 @@ try {
         const urlHandle = jsonData.url.split('/').pop().split('?')[0];
         const product = sampleClothing.find(item => item.id === urlHandle);
         if (product) {
-            console.log('✅ Found product via JSON-LD:', product);
+            console.log('âœ… Found product via JSON-LD:', product);
             return product;
         }
     }
@@ -685,13 +685,13 @@ if (titleElement) {
         item.name.toLowerCase().includes(title.toLowerCase())
     );
     if (product) {
-        console.log('✅ Found product via title match:', product);
+        console.log('âœ… Found product via title match:', product);
         return product;
     }
 }
 }
 
-console.log('❌ No current product detected');
+console.log('âŒ No current product detected');
 return null;
 }
 
@@ -877,41 +877,43 @@ function handlePhotoUploadClick() {
 }
 
 function openWidget() {
-  const widget = document.getElementById('virtualTryonWidget');
-  if (!widget || widgetOpen) return;           // guard against double-open
-
-  widgetOpen = true;
-
-  // don't remove 'widget-minimized' yet
-  widget.classList.remove('closing');
-  widget.classList.add('opening');
-
-  widget.addEventListener('animationend', function onOpenEnd() {
-    widget.classList.remove('opening');
-    widget.classList.remove('widget-minimized');   // ← remove AFTER animation completes
-    widget.removeEventListener('animationend', onOpenEnd);
-  }, { once: true });
-
-  openPanel();
-  updateDockedState(false);
-
-  if (isMobile) document.body.style.overflow = 'hidden';
-  loadChatHistory();
-  if (currentMode === 'tryon') {
-    populateFeaturedAndQuickPicks();
-    setTimeout(() => {
-      const currentProduct = detectCurrentProduct();
-      if (currentProduct) {
+    const widget = document.getElementById('virtualTryonWidget');
+    
+    widget.classList.remove('widget-minimized');
+    widgetOpen = true;
+    
+    // Notify parent to expand iframe
+    openPanel();
+    updateDockedState(false);
+    
+    if (isMobile) {
+        document.body.style.overflow = 'hidden';
+    }
+    
+    loadChatHistory();
+    if (currentMode === 'tryon') {
+        populateFeaturedAndQuickPicks();
+        // ðŸŽ¯ ADD THESE LINES AT THE END OF YOUR EXISTING openWidget() FUNCTION:
+setTimeout(() => {
+    const currentProduct = detectCurrentProduct();
+    if (currentProduct) {
         selectedClothing = currentProduct.id;
         const featuredContainer = document.getElementById('featuredItem');
         featuredContainer.classList.add('selected');
         updateTryOnButton();
-      }
-      updateWardrobeButton();
-      const firstFocusableElement = widget.querySelector('button, input, select, [tabindex]:not([tabindex="-1"])');
-      if (firstFocusableElement) firstFocusableElement.focus();
-    }, 100);
-  }
+        console.log('ðŸŽ¯ Auto-selected current product:', currentProduct.name);
+    }
+    
+    // Update wardrobe button count
+    updateWardrobeButton();
+    
+    // ðŸŽ¯ Focus management - focus on first interactive element
+    const firstFocusableElement = widget.querySelector('button, input, select, [tabindex]:not([tabindex="-1"])');
+    if (firstFocusableElement) {
+        firstFocusableElement.focus();
+    }
+}, 100);
+    }
 }
 
 /**
@@ -919,24 +921,19 @@ function openWidget() {
  * Handles cleanup of UI elements and user data
  */
 function closeWidget() {
-  const widget = document.getElementById('virtualTryonWidget');
-  if (!widget) return;
-
-  widget.classList.remove('opening');
-  widget.classList.add('closing');
-
-  widget.addEventListener('animationend', function onCloseEnd() {
-    widget.classList.remove('closing');
+    const widget = document.getElementById('virtualTryonWidget');
+    if (!widget) {
+        console.error('Widget element not found');
+        return;
+    }
+    
     widget.classList.add('widget-minimized');
-    widget.removeEventListener('animationend', onCloseEnd);
-
-    // ⬇️ move these here so the iframe collapses AFTER the shrink completes
+    widgetOpen = false;
+    currentMode = 'tryon';
+    
+    // Notify parent to collapse iframe
     closePanel();
     updateDockedState(true);
-  }, { once: true });
-
-  widgetOpen = false;
-  currentMode = 'tryon';
     
     // Reset body overflow
     document.body.style.overflow = '';
@@ -976,7 +973,7 @@ function closeWidget() {
     
     updateTryOnButton();
     
-    // 🎯 Focus management - return focus to page when widget closes
+    // ðŸŽ¯ Focus management - return focus to page when widget closes
     const widgetToggle = document.querySelector('.widget-toggle');
     if (widgetToggle) {
         widgetToggle.focus();
@@ -1025,7 +1022,7 @@ function switchMode(mode) {
     loadChatHistory();
 }
 
-// 🔄 REPLACE YOUR EXISTING populateFeaturedAndQuickPicks() FUNCTION WITH THIS:
+// ðŸ”„ REPLACE YOUR EXISTING populateFeaturedAndQuickPicks() FUNCTION WITH THIS:
 async function populateFeaturedAndQuickPicks() {
 if (sampleClothing.length === 0) {
 await loadClothingData();
@@ -1035,7 +1032,7 @@ if (sampleClothing.length === 0) {
 return; // No items available
 }
 
-// 🎯 TRY TO DETECT CURRENT PRODUCT PAGE
+// ðŸŽ¯ TRY TO DETECT CURRENT PRODUCT PAGE
 const currentProduct = detectCurrentProduct();
 let featuredItem = null;
 let quickPicksPool = [...sampleClothing];
@@ -1045,7 +1042,7 @@ if (currentProduct) {
 featuredItem = currentProduct;
 // Remove current product from quick picks pool
 quickPicksPool = sampleClothing.filter(item => item.id !== currentProduct.id);
-console.log('🎯 Using current product as featured:', featuredItem.name);
+console.log('ðŸŽ¯ Using current product as featured:', featuredItem.name);
 } else {
 // Fallback to variety-based selection
 const categories = ['dress', 'shirt', 'pants', 'jacket', 'shorts'];
@@ -1069,7 +1066,7 @@ while (varietyItems.length < 7 && varietyItems.length < sampleClothing.length) {
 
 featuredItem = varietyItems[0];
 quickPicksPool = varietyItems.slice(1);
-console.log('📦 Using variety-based featured item:', featuredItem.name);
+console.log('ðŸ“¦ Using variety-based featured item:', featuredItem.name);
 }
 
 // Get data source info
@@ -1196,7 +1193,7 @@ function loadChatHistory() {
     container.scrollTop = container.scrollHeight;
     
     if (history.length === 0 && currentMode === 'chat') {
-        addBotMessage("Hi! I'm your personal fashion assistant. Ask me anything about style, trends, or fashion advice! ✨");
+        addBotMessage("Hi! I'm your personal fashion assistant. Ask me anything about style, trends, or fashion advice! âœ¨");
     }
 }
 
@@ -1357,23 +1354,23 @@ function enableMessageInput() {
 function handleTryOnMessage(message) {
     if (message.toLowerCase().includes('photo') || message.toLowerCase().includes('picture')) {
         if (isMobile) {
-            addBotMessage("Please use the camera buttons to take a picture or select from your gallery! 📸");
+            addBotMessage("Please use the camera buttons to take a picture or select from your gallery! ðŸ“¸");
         } else {
-            addBotMessage("Please use the photo upload area to add your picture! 📸");
+            addBotMessage("Please use the photo upload area to add your picture! ðŸ“¸");
         }
     } else if (message.toLowerCase().includes('clothes') || message.toLowerCase().includes('outfit')) {
-        addBotMessage("Great! Check out our featured item or quick picks, or browse our full collection! 👗");
+        addBotMessage("Great! Check out our featured item or quick picks, or browse our full collection! ðŸ‘—");
     } else {
-        addBotMessage("I'm here to help you try on clothes virtually! Upload a photo and pick an item to get started. ✨");
+        addBotMessage("I'm here to help you try on clothes virtually! Upload a photo and pick an item to get started. âœ¨");
     }
 }
 
 function handleGeneralMessage(message) {
     const responses = [
-        "That's a great question about fashion! Trends are always evolving. 💫",
-        "I love helping with style choices! What's your favorite color to wear? 🎨",
-        "Fashion is all about expressing yourself! What look are you going for? ✨",
-        "Style tip: Confidence is your best accessory! 💪"
+        "That's a great question about fashion! Trends are always evolving. ðŸ’«",
+        "I love helping with style choices! What's your favorite color to wear? ðŸŽ¨",
+        "Fashion is all about expressing yourself! What look are you going for? âœ¨",
+        "Style tip: Confidence is your best accessory! ðŸ’ª"
     ];
     
     const randomResponse = responses[Math.floor(Math.random() * responses.length)];
@@ -1703,7 +1700,7 @@ resultSection.innerHTML = `
             <button class="buy-now-btn" onclick="handleBuyNow(this, '${clothing.id}', '${result.result_image_url}', '${currentTryOnId}')">
                 <div class="loading-spinner"></div>
                 <span class="btn-text">
-                    <span class="cart-icon">🛒</span>
+                    <span class="cart-icon">ðŸ›’</span>
                     Add to Cart - $${clothing.price.toFixed(2)}
                 </span>
             </button>
@@ -1726,7 +1723,7 @@ resultSection.innerHTML = `
                 <button class="buy-now-btn" onclick="handleBuyNow(this, '${clothing.id}', '${placeholderUrl}', '${currentTryOnId}')">
                     <div class="loading-spinner"></div>
                     <span class="btn-text">
-                        <span class="cart-icon">🛒</span>
+                        <span class="cart-icon">ðŸ›’</span>
                         Add to Cart - $${clothing.price.toFixed(2)}
                     </span>
                 </button>
@@ -1751,7 +1748,7 @@ resultSection.innerHTML = `
             <button class="buy-now-btn" onclick="handleBuyNow(this, '${clothing.id}', '${placeholderUrl}', '${currentTryOnId}')">
                 <div class="loading-spinner"></div>
                 <span class="btn-text">
-                    <span class="cart-icon">🛒</span>
+                    <span class="cart-icon">ðŸ›’</span>
                     Add to Cart - $${clothing.price.toFixed(2)}
                 </span>
             </button>
@@ -1991,14 +1988,14 @@ notification.className = 'custom-notification' + (isError ? ' error' : '');
 
 notification.innerHTML = `
 <div class="notification-icon">
-    ${isError ? '✗' : '✓'}
+    ${isError ? 'âœ—' : 'âœ“'}
 </div>
 <div class="notification-content">
     <div class="notification-title">${title}</div>
     <div class="notification-subtitle">${subtitle}</div>
 </div>
 <button class="notification-close" onclick="hideNotification(this.parentElement)">
-    ×
+    Ã—
 </button>
 <div class="notification-progress"></div>
 `;
@@ -2105,10 +2102,10 @@ cartDrawers.forEach(selector => {
     }
 });
 
-console.log('✅ Cart display updated successfully');
+console.log('âœ… Cart display updated successfully');
 
 } catch (error) {
-console.error('❌ Error updating cart display:', error);
+console.error('âŒ Error updating cart display:', error);
 // Don't throw error - the item was still added successfully
 }
 }
@@ -2166,8 +2163,8 @@ if (clothing.data_source === 'shopify') {
 }
 
 } catch (error) {
-console.error('❌ Purchase error:', error);
-alert('❌ Purchase error: ' + error.message);
+console.error('âŒ Purchase error:', error);
+alert('âŒ Purchase error: ' + error.message);
 } finally {
 buyBtn.classList.remove('loading');
 buyBtn.disabled = false;
@@ -2184,21 +2181,21 @@ try {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-            id: gidToNumericId(variantToAdd.id), // ← convert GID → numeric
+            id: gidToNumericId(variantToAdd.id), // â† convert GID â†’ numeric
             quantity: 1
         })        
     });
 
     if (cartResponse.ok) {
         const cartResult = await cartResponse.json();
-        console.log('✅ Successfully added to Shopify cart:', cartResult);
+        console.log('âœ… Successfully added to Shopify cart:', cartResult);
         
         // Show success notification
         const sizeText = variantToAdd.size || variantToAdd.title || '';
         const sizeDisplay = sizeText ? `Size ${sizeText}` : '';
         showSuccessNotification(
             'Added to Cart!',
-            `${clothing.name} ${sizeDisplay ? `• ${sizeDisplay}` : ''}`
+            `${clothing.name} ${sizeDisplay ? `â€¢ ${sizeDisplay}` : ''}`
         );
         
         // Update cart display
@@ -2209,11 +2206,11 @@ try {
         
     } else {
         const errorText = await cartResponse.text();
-        console.error('❌ Shopify cart error:', errorText);
-        alert(`❌ Failed to add to cart. Error: ${cartResponse.status}`);
+        console.error('âŒ Shopify cart error:', errorText);
+        alert(`âŒ Failed to add to cart. Error: ${cartResponse.status}`);
     }
 } catch (error) {
-    console.error('❌ Shopify purchase error:', error);
+    console.error('âŒ Shopify purchase error:', error);
     throw error;
 }
 }
@@ -2238,7 +2235,7 @@ try {
     await sendAnalyticsTracking('supabase_purchase_intent', clothing, variantToAdd, tryonResultUrl, tryOnId);
     
 } catch (error) {
-    console.error('❌ Supabase purchase error:', error);
+    console.error('âŒ Supabase purchase error:', error);
     throw error;
 }
 }
@@ -2256,7 +2253,7 @@ try {
     await sendAnalyticsTracking('demo_purchase_intent', clothing, variantToAdd, tryonResultUrl, tryOnId);
     
 } catch (error) {
-    console.error('❌ Demo purchase error:', error);
+    console.error('âŒ Demo purchase error:', error);
     throw error;
 }
 }
@@ -2306,16 +2303,16 @@ try {
         body: JSON.stringify(conversionData)
     }).then(response => {
         if (response.ok) {
-            console.log('✅ Analytics tracked successfully');
+            console.log('âœ… Analytics tracked successfully');
         } else {
-            console.log('⚠️ Analytics tracking failed, but purchase succeeded');
+            console.log('âš ï¸ Analytics tracking failed, but purchase succeeded');
         }
     }).catch(error => {
-        console.log('⚠️ Analytics tracking error:', error);
+        console.log('âš ï¸ Analytics tracking error:', error);
     });
     
 } catch (webhookError) {
-    console.log('⚠️ Webhook tracking failed:', webhookError);
+    console.log('âš ï¸ Webhook tracking failed:', webhookError);
 }
 }
 
@@ -2561,7 +2558,7 @@ async function applyWidgetTheme() {
     }
 
     const widget = document.getElementById('virtualTryonWidget');
-    if (!widget) return; // ← guard
+    if (!widget) return; // â† guard
 
     widget.classList.remove('theme-white', 'theme-cream', 'theme-black');
     widget.classList.add(`theme-${theme}`);
@@ -2633,7 +2630,7 @@ function addToWardrobe(clothing, resultImageUrl, tryOnId) {
     saveWardrobe(wardrobe);
     updateWardrobeButton();
     
-    console.log('✅ Added to wardrobe:', clothing.name);
+    console.log('âœ… Added to wardrobe:', clothing.name);
 }
 
 // Add original photo to wardrobe (for outfit building)
@@ -2666,7 +2663,7 @@ function addOriginalPhotoToWardrobe() {
         saveWardrobe(wardrobe);
         updateWardrobeButton();
         
-        console.log('✅ Added original photo to wardrobe');
+        console.log('âœ… Added original photo to wardrobe');
     }
 }
 
@@ -2677,7 +2674,7 @@ function removeFromWardrobe(tryOnId) {
     saveWardrobe(filteredWardrobe);
     updateWardrobeButton();
     
-    console.log('🗑️ Removed from wardrobe:', tryOnId);
+    console.log('ðŸ—‘ï¸ Removed from wardrobe:', tryOnId);
 }
 
 // Update wardrobe button count
@@ -2740,16 +2737,16 @@ function renderWardrobeGrid() {
                 <div class="wardrobe-item-actions">
                     ${!isOriginalPhoto ? `
                         <button class="wardrobe-action-btn wardrobe-add-outfit-btn" onclick="addToOutfit('${item.id}')" title="Add this item to your outfit">
-                            <span>👕</span>
+                            <span>ðŸ‘•</span>
                             <span>Add to Outfit</span>
                         </button>
                         <button class="wardrobe-action-btn wardrobe-add-cart-btn" onclick="addWardrobeItemToCart('${item.id}')" title="Add this item to your cart">
-                            <span>🛒</span>
+                            <span>ðŸ›’</span>
                             <span>Add to Cart</span>
                         </button>
                     ` : `
                         <button class="wardrobe-action-btn wardrobe-use-photo-btn" onclick="useOriginalPhoto('${item.id}')" title="Use this photo for try-on">
-                            <span>📸</span>
+                            <span>ðŸ“¸</span>
                             <span>Use Photo</span>
                         </button>
                     `}
@@ -2831,7 +2828,7 @@ function addToOutfit(tryOnId) {
     // Update try-on button
     updateTryOnButton();
     
-    console.log('✅ Added to outfit:', item.clothingName);
+    console.log('âœ… Added to outfit:', item.clothingName);
 }
 
 // Use original photo for try-on
@@ -2860,7 +2857,7 @@ function useOriginalPhoto(tryOnId) {
     // Update try-on button
     updateTryOnButton();
     
-    console.log('✅ Using original photo for try-on');
+    console.log('âœ… Using original photo for try-on');
 }
 
 // Select wardrobe item for re-try
@@ -2907,7 +2904,7 @@ function selectWardrobeItem(tryOnId) {
     // Show notification
     showSuccessNotification('Item Selected', `${clothing.name} selected for try-on!`);
     
-    console.log('✅ Selected wardrobe item:', clothing.name);
+    console.log('âœ… Selected wardrobe item:', clothing.name);
 }
 
 // Auto-save successful try-ons to wardrobe
@@ -2967,21 +2964,21 @@ async function addWardrobeItemToCart(tryOnId) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                id: gidToNumericId(variantToAdd.id), // ← convert GID → numeric
+                id: gidToNumericId(variantToAdd.id), // â† convert GID â†’ numeric
                 quantity: 1
             })
         });
         
         if (cartResponse.ok) {
             const cartResult = await cartResponse.json();
-            console.log('✅ Successfully added wardrobe item to cart:', cartResult);
+            console.log('âœ… Successfully added wardrobe item to cart:', cartResult);
             
             // Show success notification
             const sizeText = variantToAdd.size || variantToAdd.title || '';
             const sizeDisplay = sizeText ? `Size ${sizeText}` : '';
             showSuccessNotification(
                 'Added to Cart!',
-                `${item.clothingName} ${sizeDisplay ? `• ${sizeDisplay}` : ''}`
+                `${item.clothingName} ${sizeDisplay ? `â€¢ ${sizeDisplay}` : ''}`
             );
             
             // Update cart display
@@ -3030,28 +3027,26 @@ async function addWardrobeItemToCart(tryOnId) {
                     body: JSON.stringify(conversionData)
                 }).then(response => {
                     if (response.ok) {
-                        console.log('✅ Wardrobe analytics tracked successfully');
+                        console.log('âœ… Wardrobe analytics tracked successfully');
                     } else {
-                        console.log('⚠️ Wardrobe analytics tracking failed, but cart add succeeded');
+                        console.log('âš ï¸ Wardrobe analytics tracking failed, but cart add succeeded');
                     }
                 }).catch(error => {
-                    console.log('⚠️ Wardrobe analytics tracking error:', error);
+                    console.log('âš ï¸ Wardrobe analytics tracking error:', error);
                 });
                 
             } catch (webhookError) {
-                console.log('⚠️ Wardrobe webhook tracking failed:', webhookError);
+                console.log('âš ï¸ Wardrobe webhook tracking failed:', webhookError);
             }
             
         } else {
             const errorText = await cartResponse.text();
-            console.error('❌ Shopify cart error:', errorText);
-            alert(`❌ Failed to add to cart. Error: ${cartResponse.status}`);
+            console.error('âŒ Shopify cart error:', errorText);
+            alert(`âŒ Failed to add to cart. Error: ${cartResponse.status}`);
         }
         
     } catch (error) {
-        console.error('❌ Network error:', error);
-        alert('❌ Network error: ' + error.message);
+        console.error('âŒ Network error:', error);
+        alert('âŒ Network error: ' + error.message);
     }
 }
-
-
