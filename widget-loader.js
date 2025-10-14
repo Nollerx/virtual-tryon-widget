@@ -54,6 +54,13 @@ frame.title = 'Ello Virtual Try-On'; // a11y
   opacity:0;visibility:hidden;transform:translateZ(0) scale(.98);
   transition:opacity .18s ease, transform .18s ease, box-shadow .18s ease, border-radius .18s ease;
 `;
+  frame.style.position = 'absolute';
+  frame.style.right = '0';
+  frame.style.bottom = '0';
+  frame.style.transformOrigin = 'bottom right';
+
+  // Optional: smoother size animation (Safari-friendly)
+  frame.style.transition += ', width .22s cubic-bezier(.2,.8,.2,1), height .22s cubic-bezier(.2,.8,.2,1)';
   frame.setAttribute('tabindex', '-1');
   container.appendChild(frame);
   
@@ -64,7 +71,6 @@ frame.title = 'Ello Virtual Try-On'; // a11y
    const isMobile = window.matchMedia('(max-width:768px)').matches;
    // keep the container fixed at bottom-right; just resize the iframe
   Object.assign(frame.style, {
-   position:'static',
     width: isMobile ? '92vw' : '420px',
    height: isMobile ? '78vh' : '650px',
   borderRadius: isMobile ? '12px' : '16px',
@@ -78,7 +84,6 @@ frame.title = 'Ello Virtual Try-On'; // a11y
 });
 function collapseToDock() {
    Object.assign(frame.style, {
-     position:'static',
      width:'64px',
      height:'64px',
      borderRadius:'12px',
