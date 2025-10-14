@@ -23,6 +23,15 @@ window.addEventListener('message', (e) => {
   }  
 });
 
+function ensureRoot() {
+  if (!document.getElementById('ello-root')) {
+    const root = document.createElement('div');
+    root.id = 'ello-root';
+    document.body.appendChild(root);
+    console.log('[ELLO] created #ello-root fallback');
+  }
+}
+
 // Send ELLO_READY when window loads
 window.addEventListener('load', () => {
   console.log('Window loaded, sending ELLO_READY');
@@ -3050,3 +3059,4 @@ async function addWardrobeItemToCart(tryOnId) {
         alert('âŒ Network error: ' + error.message);
     }
 }
+
