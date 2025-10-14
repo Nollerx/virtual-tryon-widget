@@ -1,3 +1,4 @@
+/* Reset and base styles */
 * {
     margin: 0;
     padding: 0;
@@ -66,7 +67,7 @@ body {
     height: 64px !important;     /* was 72px */
     border-radius: 12px !important; /* match iframe radius (below) */
     cursor: pointer;
-    background: transparent !important;  /* was a gradient */
+    background: linear-gradient(135deg, #333 0%, #555 100%) !important;
     display: flex !important;
     align-items: center;
     justify-content: center;
@@ -98,7 +99,7 @@ body {
 .widget-minimized::after {
     content: 'TRY ON';
     display: block;
-    color: #333;
+    color: #fff;
     font-size: 10px;
     font-weight: 700;
     text-align: center;
@@ -106,7 +107,7 @@ body {
     letter-spacing: 1px;
     white-space: pre-line;
     text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(255,255,255,0.8);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
 }
 
 /* Header - Clean White */
@@ -307,7 +308,7 @@ body {
     position: relative;
     overflow: hidden;
   
-    /* FIXES STRETCHING â€” locks tile shape to 3:4 */
+    /* FIXES STRETCHING — locks tile shape to 3:4 */
     aspect-ratio: 3 / 4;
     min-height: unset;
   
