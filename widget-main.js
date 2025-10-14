@@ -209,9 +209,6 @@ panel.innerHTML = `
                         <button class="btn btn-primary" onclick="startTryOn()" id="tryOnBtn" disabled aria-label="Try on selected clothing with your photo. Press Enter to activate.">
                             Try On
                         </button>
-                        <button class="btn btn-secondary" onclick="openPanel()" style="margin-top: 8px;">
-                            Test Open Panel
-                        </button>
                     </div>
                     
                     <div id="resultSection" style="display: none;">
