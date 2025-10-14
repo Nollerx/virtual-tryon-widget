@@ -877,43 +877,41 @@ function handlePhotoUploadClick() {
 }
 
 function openWidget() {
-    const widget = document.getElementById('virtualTryonWidget');
-    
-    widget.classList.remove('widget-minimized');
-    widgetOpen = true;
-    
-    // Notify parent to expand iframe
-    openPanel();
-    updateDockedState(false);
-    
-    if (isMobile) {
-        document.body.style.overflow = 'hidden';
-    }
-    
-    loadChatHistory();
-    if (currentMode === 'tryon') {
-        populateFeaturedAndQuickPicks();
-        // 🎯 ADD THESE LINES AT THE END OF YOUR EXISTING openWidget() FUNCTION:
-setTimeout(() => {
-    const currentProduct = detectCurrentProduct();
-    if (currentProduct) {
+  const widget = document.getElementById('virtualTryonWidget');
+  if (!widget || widgetOpen) return;           // guard against double-open
+
+  widgetOpen = true;
+
+  // don't remove 'widget-minimized' yet
+  widget.classList.remove('closing');
+  widget.classList.add('opening');
+
+  widget.addEventListener('animationend', function onOpenEnd() {
+    widget.classList.remove('opening');
+    widget.classList.remove('widget-minimized');   // ← remove AFTER animation completes
+    widget.removeEventListener('animationend', onOpenEnd);
+  }, { once: true });
+
+  openPanel();
+  updateDockedState(false);
+
+  if (isMobile) document.body.style.overflow = 'hidden';
+  loadChatHistory();
+  if (currentMode === 'tryon') {
+    populateFeaturedAndQuickPicks();
+    setTimeout(() => {
+      const currentProduct = detectCurrentProduct();
+      if (currentProduct) {
         selectedClothing = currentProduct.id;
         const featuredContainer = document.getElementById('featuredItem');
         featuredContainer.classList.add('selected');
         updateTryOnButton();
-        console.log('🎯 Auto-selected current product:', currentProduct.name);
-    }
-    
-    // Update wardrobe button count
-    updateWardrobeButton();
-    
-    // 🎯 Focus management - focus on first interactive element
-    const firstFocusableElement = widget.querySelector('button, input, select, [tabindex]:not([tabindex="-1"])');
-    if (firstFocusableElement) {
-        firstFocusableElement.focus();
-    }
-}, 100);
-    }
+      }
+      updateWardrobeButton();
+      const firstFocusableElement = widget.querySelector('button, input, select, [tabindex]:not([tabindex="-1"])');
+      if (firstFocusableElement) firstFocusableElement.focus();
+    }, 100);
+  }
 }
 
 /**
@@ -921,19 +919,24 @@ setTimeout(() => {
  * Handles cleanup of UI elements and user data
  */
 function closeWidget() {
-    const widget = document.getElementById('virtualTryonWidget');
-    if (!widget) {
-        console.error('Widget element not found');
-        return;
-    }
-    
+  const widget = document.getElementById('virtualTryonWidget');
+  if (!widget) return;
+
+  widget.classList.remove('opening');
+  widget.classList.add('closing');
+
+  widget.addEventListener('animationend', function onCloseEnd() {
+    widget.classList.remove('closing');
     widget.classList.add('widget-minimized');
-    widgetOpen = false;
-    currentMode = 'tryon';
-    
-    // Notify parent to collapse iframe
+    widget.removeEventListener('animationend', onCloseEnd);
+
+    // ⬇️ move these here so the iframe collapses AFTER the shrink completes
     closePanel();
     updateDockedState(true);
+  }, { once: true });
+
+  widgetOpen = false;
+  currentMode = 'tryon';
     
     // Reset body overflow
     document.body.style.overflow = '';
@@ -3050,4 +3053,5 @@ async function addWardrobeItemToCart(tryOnId) {
         alert('❌ Network error: ' + error.message);
     }
 }
+
 
