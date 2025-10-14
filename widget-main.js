@@ -19,6 +19,10 @@ window.addEventListener('message', (e) => {
     window.ELLO_SHOP_DOMAIN      = payload.shopDomain || window.ELLO_SHOP_DOMAIN || '';
     window.ELLO_STOREFRONT_TOKEN = payload.storefrontToken || window.ELLO_STOREFRONT_TOKEN || '';
   
+    // Prefer parent-detected PDP
+    window.ELLO_CURRENT_PRODUCT_HANDLE = payload.currentProduct?.handle || null;
+    window.ELLO_CURRENT_VARIANT_ID     = payload.currentProduct?.variantId || null;
+  
     initializeWidget(ELLO_STORE);
   }
   
@@ -616,6 +620,18 @@ try {
 }
 
 
+// Helper to get current product from parent detection
+function getCurrentProductFromParent() {
+  const h = window.ELLO_CURRENT_PRODUCT_HANDLE;
+  if (!h) return null;
+  // Try handle (id), or IDs we stored from Shopify
+  return sampleClothing.find(item =>
+    item.id === h ||
+    item.shopify_product_id === h ||
+    (item.shopify_product_gid && item.shopify_product_gid.endsWith(h))
+  ) || null;
+}
+
 // 🎯 ADD THIS NEW FUNCTION HERE:
 function detectCurrentProduct() {
 // Method 1: Check URL for product handle (most reliable)
@@ -1030,7 +1046,7 @@ return; // No items available
 }
 
 // 🎯 TRY TO DETECT CURRENT PRODUCT PAGE
-const currentProduct = detectCurrentProduct();
+const currentProduct = getCurrentProductFromParent() || detectCurrentProduct();
 let featuredItem = null;
 let quickPicksPool = [...sampleClothing];
 
