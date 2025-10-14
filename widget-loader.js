@@ -23,6 +23,31 @@ const storefrontToken = scriptTag?.dataset?.storefrontToken || "";
   if (!shopDomain) console.warn('[Ello] Missing data-shop-domain on embed tag.');
   if (!storefrontToken) console.warn('[Ello] Missing data-storefront-token on embed tag.');
 
+  // Detect current Shopify product on parent page
+  function detectCurrentShopifyProduct() {
+    try {
+      // /products/<handle>?variant=ID (canonical on Shopify)
+      const m = location.pathname.match(/\/products\/([^\/\?]+)/);
+      const handle = m ? decodeURIComponent(m[1]) 
+                       : (window.ShopifyAnalytics?.meta?.product?.handle || null);
+
+      const variantId = new URLSearchParams(location.search).get('variant')
+                     || window.ShopifyAnalytics?.meta?.selectedVariantId
+                     || null;
+
+      // Nice-to-have (not required)
+      const title   = window.ShopifyAnalytics?.meta?.product?.title
+                   || document.querySelector('meta[property="og:title"]')?.content
+                   || null;
+      const ogImage = document.querySelector('meta[property="og:image"]')?.content || null;
+      const url     = document.querySelector('meta[property="og:url"]')?.content || location.href;
+
+      if (handle) return { handle, variantId, title, ogImage, url };
+    } catch(_) {}
+    return null;
+  }
+  const currentProduct = detectCurrentShopifyProduct();
+
   // 1) Container
   const container = document.createElement('div');
   container.id = 'ello-container';
@@ -167,7 +192,7 @@ frame.title = 'Ello Virtual Try-On'; // a11y
         // send config right after ready (keep your payload)
         frame.contentWindow?.postMessage({
           type: 'ELLO_CONFIG',
-          payload: { storeId, storeName, theme, shopDomain, storefrontToken }
+          payload: { storeId, storeName, theme, shopDomain, storefrontToken, currentProduct }
         }, ALLOWED_ORIGIN);
         break;
       case 'ELLO_OPEN_PANEL':
@@ -188,7 +213,7 @@ frame.title = 'Ello Virtual Try-On'; // a11y
         // iFrame requested config on load
         frame.contentWindow?.postMessage({
           type: 'ELLO_CONFIG',
-          payload: { storeId, storeName, theme, shopDomain, storefrontToken }
+          payload: { storeId, storeName, theme, shopDomain, storefrontToken, currentProduct }
         }, ALLOWED_ORIGIN);
         break;
       default:
@@ -218,7 +243,7 @@ frame.title = 'Ello Virtual Try-On'; // a11y
     console.log('Frame contentWindow:', frame.contentWindow);
     frame.contentWindow?.postMessage({
       type: 'ELLO_CONFIG',
-      payload: { storeId, storeName, theme, shopDomain, storefrontToken }
+      payload: { storeId, storeName, theme, shopDomain, storefrontToken, currentProduct }
     }, ALLOWED_ORIGIN);
     console.log('Config sent to iframe');
   });
@@ -228,5 +253,3 @@ frame.title = 'Ello Virtual Try-On'; // a11y
     console.error('Iframe error:', e);
   });
 })();
-
-
