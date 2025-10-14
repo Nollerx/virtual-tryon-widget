@@ -20,7 +20,12 @@ window.addEventListener('message', (e) => {
     window.ELLO_STOREFRONT_TOKEN = payload.storefrontToken || window.ELLO_STOREFRONT_TOKEN || '';
   
     initializeWidget(ELLO_STORE);
-  }  
+  }
+  
+  // Handle panel open/close animations
+  const t = e.data?.type;
+  if (t === 'ELLO_OPEN_PANEL')  document.documentElement.classList.add('ello-open');
+  if (t === 'ELLO_CLOSE_PANEL') document.documentElement.classList.remove('ello-open');
 });
 
 // Send ELLO_READY when window loads
