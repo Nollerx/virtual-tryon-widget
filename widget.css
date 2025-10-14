@@ -985,4 +985,43 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+
+    /* === Ello VTO | Open/Close animation (bottom-left anchor) === */
+#virtualTryonWidget {
+  /* Ensure animation pivots correctly across browsers */
+  transform-origin: bottom left;
+  transform-box: border-box;
+  transition: border-radius 220ms ease, box-shadow 220ms ease;
+}
+
+/* Motion classes are applied briefly by JS during the transition */
+#virtualTryonWidget.opening,
+#virtualTryonWidget.closing { will-change: transform; }
+
+/* Open: grow from bottom-left toward top-right */
+@keyframes ello-widget-open {
+  from { transform: scale(0.72); }
+  to   { transform: scale(1); }
+}
+#virtualTryonWidget.opening {
+  animation: ello-widget-open 240ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Close: shrink back into bottom-left */
+@keyframes ello-widget-close {
+  from { transform: scale(1); }
+  to   { transform: scale(0.72); }
+}
+#virtualTryonWidget.closing {
+  animation: ello-widget-close 220ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  #virtualTryonWidget.opening,
+  #virtualTryonWidget.closing {
+    animation: none !important;
+  }
+}
+
 }
