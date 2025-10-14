@@ -54,105 +54,104 @@ frame.title = 'Ello Virtual Try-On'; // a11y
   opacity:0;visibility:hidden;transform:translateZ(0) scale(.98);
   transition:opacity .18s ease, transform .18s ease, box-shadow .18s ease, border-radius .18s ease;
 `;
+  // --- 0) Scrim (unchanged if you already added it) ---
+  const scrim = document.createElement('div');
+  Object.assign(scrim.style, {
+    position: 'fixed', inset: '0', background: 'rgba(0,0,0,.12)',
+    opacity: '0', pointerEvents: 'none',
+    transition: 'opacity .22s ease',
+    zIndex: '2147483645'
+  });
+  document.body.appendChild(scrim);
+
+  // --- 1) Frame baseline: constant overlay size + smooth transitions ---
   frame.style.position = 'absolute';
   frame.style.right = '0';
   frame.style.bottom = '0';
   frame.style.transformOrigin = 'bottom right';
+  frame.style.opacity = '0';
+  frame.style.visibility = 'hidden';
+  frame.style.border = '0';
+  frame.style.outline = 'none';
+  frame.style.background = 'transparent';
+  frame.style.boxShadow = 'none';
+  frame.style.borderRadius = '16px';
+  frame.style.willChange = 'clip-path, transform, opacity, box-shadow';
 
-  // Upgrade iframe's transition (buttery smooth)
   frame.style.transition = [
     'opacity .18s ease',
-    'transform .24s cubic-bezier(.16,1,.3,1)',   // springy
-    'box-shadow .24s ease',
-    'border-radius .24s ease',
-    'width .26s cubic-bezier(.2,.8,.2,1)',
-    'height .26s cubic-bezier(.2,.8,.2,1)'
+    'transform .28s cubic-bezier(.16,1,.3,1)',
+    'box-shadow .28s ease',
+    'clip-path .28s cubic-bezier(.16,1,.3,1)'
   ].join(', ');
   frame.setAttribute('tabindex', '-1');
   container.appendChild(frame);
   
-  // Scrim (modal backdrop)
-  const scrim = document.createElement('div');
-  Object.assign(scrim.style, {
-    position: 'fixed',
-    inset: '0',
-    background: 'rgba(0,0,0,.12)',
-    opacity: '0',
-    pointerEvents: 'none',
-    transition: 'opacity .18s ease',
-    zIndex: '2147483645' // just under the iframe
-  });
-  document.body.appendChild(scrim);
-
-  // Small perf hint helpers
-  const enablePerfHints = () => { frame.style.willChange = 'width,height,transform'; };
-  const disablePerfHints = () => { frame.style.willChange = ''; };
-  
-  // Respect reduced motion (optional but pro)
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    frame.style.transition = 'none';
-    scrim.style.transition = 'none';
+  // --- 2) Helper: compute overlay size once per state (and on resize) ---
+  function overlaySize() {
+    const isMobile = matchMedia('(max-width:768px)').matches;
+    const w = isMobile ? Math.floor(innerWidth * 0.92) : 420;
+    const h = isMobile ? Math.floor(innerHeight * 0.78) : 650;
+    return { w, h };
   }
-  
-  console.log('Iframe created with src:', frame.src);
-  console.log('Container added to DOM:', container);
+
+  function applyOverlaySize() {
+    const { w, h } = overlaySize();
+    frame.style.width = w + 'px';
+    frame.style.height = h + 'px';
+    frame.dataset.ow = String(w);
+    frame.dataset.oh = String(h);
+  }
+  applyOverlaySize();
+  addEventListener('resize', () => {
+    const wasOpen = document.documentElement.classList.contains('ello-open');
+    applyOverlaySize();
+    // re-apply clip for dock if closed
+    if (!wasOpen) dockClip();
+  });
+
+  // --- 3) Dock = clip to a 64x64 window at bottom-right (no size animation) ---
+  function dockClip() {
+    const w = +frame.dataset.ow || 420;
+    const h = +frame.dataset.oh || 650;
+    // crop everything except a 64x64 square at bottom-right
+    frame.style.clipPath = `inset(${Math.max(h - 64, 0)}px 0 0 ${Math.max(w - 64, 0)}px round 12px)`;
+    frame.style.boxShadow = 'none';
+    frame.style.transform = 'translateZ(0) scale(1)'; // stable
+  }
+
+  // --- 4) Open/Close with GPU-friendly changes only ---
+  function showFrame() {
+    frame.style.opacity = '1';
+    frame.style.visibility = 'visible';
+  }
 
   function expandToOverlay() {
-    const isMobile = window.matchMedia('(max-width:768px)').matches;
-    enablePerfHints();
-
-    // Fade in scrim
+    document.documentElement.classList.add('ello-open');
     scrim.style.pointerEvents = 'auto';
     scrim.style.opacity = '1';
 
-    // micro-pop to emphasize bottom-right origin
+    // micro-pop to emphasize origin (doesn't trigger layout)
     frame.style.transform = 'scale(0.985) translateZ(0)';
-
-    // Ensure transition kicks in cleanly
     requestAnimationFrame(() => {
-      Object.assign(frame.style, {
-        width:  isMobile ? '92vw' : '420px',
-        height: isMobile ? '78vh' : '650px',
-        borderRadius: isMobile ? '12px' : '16px',
-        boxShadow: '0 12px 40px rgba(0,0,0,.22)',
-        transform: 'scale(1) translateZ(0)'
-      });
-      setTimeout(disablePerfHints, 350);
+      frame.style.clipPath = 'inset(0 0 0 0 round 16px)';
+      frame.style.boxShadow = '0 20px 60px rgba(0,0,0,.25)';
+      frame.style.transform = 'scale(1) translateZ(0)';
     });
   }
-// Re-apply panel size if viewport changes while open
- window.addEventListener('resize', () => {
-   const open = frame.style.width && frame.style.width !== '64px';
-   if (open) expandToOverlay();
-});
   function collapseToDock() {
-    enablePerfHints();
-
-    // Fade out scrim
+    document.documentElement.classList.remove('ello-open');
     scrim.style.opacity = '0';
     scrim.style.pointerEvents = 'none';
 
     requestAnimationFrame(() => {
-      Object.assign(frame.style, {
-        width: '64px',
-        height: '64px',
-        borderRadius: '12px',
-        boxShadow: 'none',
-        transform: 'scale(1) translateZ(0)' // keep stable
-      });
-      setTimeout(disablePerfHints, 250);
+      dockClip();
+      frame.style.boxShadow = 'none';
+      frame.style.transform = 'scale(1) translateZ(0)';
     });
   }
   
-  function showFrame() {
-    Object.assign(frame.style, {
-      opacity:'1',
-      visibility:'visible',
-      transform:'scale(1)'
-    });
-  }
-
-  // 4) postMessage contract (parent side)
+  // --- 5) On READY, show + dock (no layout animation) ---
   window.addEventListener('message', (e) => {
     console.log('Parent received message:', e.data, 'from origin:', e.origin);
     if (!e.origin || e.origin !== ALLOWED_ORIGIN) {
@@ -164,12 +163,12 @@ frame.title = 'Ello Virtual Try-On'; // a11y
       case 'ELLO_READY':
         console.log('Widget ready, showing frame');
         showFrame();
-        collapseToDock();
-         // also push config immediately on READY
-frame.contentWindow?.postMessage({
- type: 'ELLO_CONFIG',
-  payload: { storeId, storeName, theme, shopDomain, storefrontToken }
-}, ALLOWED_ORIGIN);
+        dockClip();
+        // send config right after ready (keep your payload)
+        frame.contentWindow?.postMessage({
+          type: 'ELLO_CONFIG',
+          payload: { storeId, storeName, theme, shopDomain, storefrontToken }
+        }, ALLOWED_ORIGIN);
         break;
       case 'ELLO_OPEN_PANEL':
         expandToOverlay();
@@ -198,6 +197,20 @@ frame.contentWindow?.postMessage({
     }
   });
 
+  // --- 6) Fallback still OK, but use the new paths ---
+  setTimeout(() => {
+    if (frame.style.opacity === '0') {
+      showFrame();
+      dockClip();
+    }
+  }, 3000);
+
+  // Respect reduced motion
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    frame.style.transition = 'none';
+    scrim.style.transition = 'none';
+  }
+
   // 5) Proactively send config after load (in case handshake races)
   frame.addEventListener('load', () => {
     console.log('Iframe loaded, sending config...');
@@ -214,15 +227,6 @@ frame.contentWindow?.postMessage({
   frame.addEventListener('error', (e) => {
     console.error('Iframe error:', e);
   });
-  
-  // Fallback: show widget after 3 seconds even if no message received
-  setTimeout(() => {
-    if (frame.style.opacity === '0') {
-      console.log('Fallback: showing widget after timeout');
-      showFrame();
-      collapseToDock();
-    }
-  }, 3000);
 })();
 
 
