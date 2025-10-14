@@ -2,8 +2,8 @@
   console.log('Widget loader starting...');
   
   // TODO: set to your CDN origin that serves widget.html + assets
-  const WIDGET_BASE_URL = "https://nollerx.github.io/virtual-tryon-widget"; 
-  const ALLOWED_ORIGIN = new URL(WIDGET_BASE_URL).origin;
+  const WIDGET_BASE_URL = "./"; 
+  const ALLOWED_ORIGIN = window.location.origin;
   
   console.log('WIDGET_BASE_URL:', WIDGET_BASE_URL);
   console.log('ALLOWED_ORIGIN:', ALLOWED_ORIGIN);
@@ -96,7 +96,11 @@ function collapseToDock() {
 
   // 4) postMessage contract (parent side)
   window.addEventListener('message', (e) => {
-    if (!e.origin || e.origin !== ALLOWED_ORIGIN) return;
+    console.log('Parent received message:', e.data, 'from origin:', e.origin);
+    if (!e.origin || e.origin !== ALLOWED_ORIGIN) {
+      console.log('Origin mismatch. Expected:', ALLOWED_ORIGIN, 'Got:', e.origin);
+      return;
+    }
     const msg = e.data || {};
     switch (msg.type) {
       case 'ELLO_READY':
@@ -139,12 +143,28 @@ frame.contentWindow?.postMessage({
   // 5) Proactively send config after load (in case handshake races)
   frame.addEventListener('load', () => {
     console.log('Iframe loaded, sending config...');
+    console.log('Frame src:', frame.src);
+    console.log('Frame contentWindow:', frame.contentWindow);
     frame.contentWindow?.postMessage({
       type: 'ELLO_CONFIG',
       payload: { storeId, storeName, theme, shopDomain, storefrontToken }
     }, ALLOWED_ORIGIN);
     console.log('Config sent to iframe');
   });
+  
+  // Add error handling for iframe
+  frame.addEventListener('error', (e) => {
+    console.error('Iframe error:', e);
+  });
+  
+  // Fallback: show widget after 3 seconds even if no message received
+  setTimeout(() => {
+    if (frame.style.opacity === '0') {
+      console.log('Fallback: showing widget after timeout');
+      showFrame();
+      collapseToDock();
+    }
+  }, 3000);
 })();
 
 
