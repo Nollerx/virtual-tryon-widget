@@ -76,6 +76,9 @@ frame.title = 'Ello Virtual Try-On'; // a11y
   borderRadius: isMobile ? '12px' : '16px',
     boxShadow:'0 12px 40px rgba(0,0,0,.22)'
   });
+  // subtle emphasis of bottom-right origin
+  frame.style.transform = 'scale(0.985)';
+  requestAnimationFrame(() => { frame.style.transform = 'scale(1)'; });
 }
 // Re-apply panel size if viewport changes while open
  window.addEventListener('resize', () => {
