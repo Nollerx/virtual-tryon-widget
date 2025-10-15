@@ -84,7 +84,7 @@ frame.title = 'Ello Virtual Try-On'; // a11y
   Object.assign(scrim.style, {
     position: 'fixed', inset: '0', background: 'rgba(0,0,0,.12)',
     opacity: '0', pointerEvents: 'none',
-    transition: 'opacity .22s ease',
+    transition: 'opacity .3s cubic-bezier(.4,0,.2,1) .05s',
     zIndex: '2147483645'
   });
   document.body.appendChild(scrim);
@@ -104,10 +104,10 @@ frame.title = 'Ello Virtual Try-On'; // a11y
   frame.style.willChange = 'clip-path, transform, opacity, box-shadow';
 
   frame.style.transition = [
-    'opacity .18s ease',
-    'transform .28s cubic-bezier(.16,1,.3,1)',
-    'box-shadow .28s ease',
-    'clip-path .28s cubic-bezier(.16,1,.3,1)'
+    'opacity .22s ease-out',
+    'transform .35s cubic-bezier(.16,1,.3,1)',
+    'box-shadow .35s ease-out',
+    'clip-path .35s cubic-bezier(.16,1,.3,1)'
   ].join(', ');
   frame.setAttribute('tabindex', '-1');
   container.appendChild(frame);
@@ -253,3 +253,5 @@ frame.title = 'Ello Virtual Try-On'; // a11y
     console.error('Iframe error:', e);
   });
 })();
+
+
