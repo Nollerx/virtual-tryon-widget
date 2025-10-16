@@ -1633,11 +1633,30 @@ function updateBrowserDisplay() {
     }
 }
 
+// Global state to prevent spam clicking
+let isTryOnInProgress = false;
+let tryOnCooldownTimeout = null;
+
 // Fixed startTryOn function - always pass tryOnId as parameter
 async function startTryOn() {
+// Prevent spam clicking
+if (isTryOnInProgress) {
+    console.log('Try-on already in progress, ignoring click');
+    return;
+}
+
 if (!userPhoto || !selectedClothing) {
 alert("Please upload a photo and select clothing first!");
 return;
+}
+
+// Set processing state
+isTryOnInProgress = true;
+const tryOnBtn = document.getElementById('tryOnBtn');
+if (tryOnBtn) {
+    tryOnBtn.disabled = true;
+    tryOnBtn.textContent = 'Processing...';
+    tryOnBtn.style.opacity = '0.6';
 }
 
 // Generate unique try-on ID for this attempt
@@ -1767,6 +1786,30 @@ resultSection.innerHTML = `
     </div>
 `;
 }
+
+// Reset processing state and re-enable button
+resetTryOnButton();
+}
+
+// Function to reset the Try On button state
+function resetTryOnButton() {
+    isTryOnInProgress = false;
+    const tryOnBtn = document.getElementById('tryOnBtn');
+    if (tryOnBtn) {
+        tryOnBtn.disabled = false;
+        tryOnBtn.textContent = 'Try On';
+        tryOnBtn.style.opacity = '1';
+    }
+    
+    // Add a cooldown period to prevent rapid clicking
+    if (tryOnCooldownTimeout) {
+        clearTimeout(tryOnCooldownTimeout);
+    }
+    
+    tryOnCooldownTimeout = setTimeout(() => {
+        // Additional cooldown period (optional)
+        console.log('Try-on cooldown period completed');
+    }, 2000); // 2 second cooldown
 }
 
 // Improved Size Selector Function
