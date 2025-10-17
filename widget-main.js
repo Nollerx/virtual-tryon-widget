@@ -1656,7 +1656,7 @@ const tryOnBtn = document.getElementById('tryOnBtn');
 if (tryOnBtn) {
     tryOnBtn.disabled = true;
     tryOnBtn.textContent = 'Processing...';
-    tryOnBtn.style.opacity = '0.6';
+    tryOnBtn.classList.add('processing');
 }
 
 // Generate unique try-on ID for this attempt
@@ -1798,7 +1798,7 @@ function resetTryOnButton() {
     if (tryOnBtn) {
         tryOnBtn.disabled = false;
         tryOnBtn.textContent = 'Try On';
-        tryOnBtn.style.opacity = '1';
+        tryOnBtn.classList.remove('processing');
     }
     
     // Add a cooldown period to prevent rapid clicking
