@@ -612,14 +612,18 @@ html:not(.ello-open) .ello-panel {
 }
 
 .btn-primary:disabled {
-    opacity: 0.6;
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.btn-primary:disabled.processing {
+    opacity: 0.6;
     position: relative;
 }
 
-.btn-primary:disabled::after {
+.btn-primary:disabled.processing::after {
     content: '';
     position: absolute;
     top: 50%;
